@@ -66,7 +66,7 @@ sub get_shortcut {
 	return "$ind<Shortcut Id=\"$scid\" Directory=\"$scdir\" Advertise=\"no\" Name=\"Zimbra Desktop\" " .
 		"Show=\"minimized\" Icon=\"$iconid\" Target=\"[SystemFolder]cscript.exe\" " .
 		"Arguments=\'\"[!$fileid]\"\'>\r\n$ind  <Icon Id=\"$iconid\" " .
-		"SourceFile=\"$dist_dir\\app\\data\\zdesktop.webapp\\icons\\default\\launcher.ico\" />\r\n" .
+		"SourceFile=\"$dist_dir\\..\\..\\src\\installer\\resources\\launcher_128x128.ico\" />\r\n" .
 		"$ind</Shortcut>\r\n";
 }
 

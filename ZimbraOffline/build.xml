@@ -51,9 +51,9 @@
   <property name="common.classes.dir" location="${common.dir}/build/classes" />
   <property name="common.jars.dir" location="${common.dir}/jars" />
 
-    <property name="soap.dir" location="../ZimbraSoap"/>
-    <property name="soap.build.dir" location="${soap.dir}/build"/>
-    <property name="soap.classes.dir" location="${soap.build.dir}/classes"/>
+  <property name="soap.dir" location="../ZimbraSoap"/>
+  <property name="soap.build.dir" location="${soap.dir}/build"/>
+  <property name="soap.classes.dir" location="${soap.build.dir}/classes"/>
 
   <property name="im.dir" location="../ZimbraIM" />
   <property name="im.jars.dir" location="${im.dir}/jars" />
@@ -74,8 +74,8 @@
   <property name="zsync.client.build.dir" location="${zsync.client.dir}/build" />
   <property name="zsync.client.classes.dir" location="${zsync.client.build.dir}/classes" />
 
-        <property name="zdext.dir" location="../ZimbraOfflineExt"/>
-        <property name="zdext.build.dir" location="${zdext.dir}/build"/>
+  <property name="zdext.dir" location="../ZimbraOfflineExt"/>
+  <property name="zdext.build.dir" location="${zdext.dir}/build"/>
 
   <condition property="is-windows">
     <os family="windows" />
@@ -84,6 +84,14 @@
     <not>
       <os family="windows" />
     </not>
+  </condition>
+  <condition property="is-linux">
+    <and>
+        <os family="unix"/>
+        <not>
+            <os family="mac"/>
+        </not>
+    </and>
   </condition>
   <condition property="is-mac">
     <os family="mac" />
@@ -125,9 +133,14 @@
   <property name="zimbra.warfile" location="${webclient.build.dir}/dist/jetty/webapps/zimbra.war" />
 
   <property name="jetty.src.dir" location="../ThirdParty/jetty" />
-  <property name="prism.src.dir" location="../ThirdParty/prism" />
-  <property name="xulrunner.src.dir" location="../ThirdParty/xulrunner" />
   <property name="jetty.version" value="6.1.22.z6" />
+
+  <property name="node-webkit.src.dir" location="../ThirdParty/node-webkit" />
+  <property name="node-webkit.version" value="0.23.3" />
+  <property name="node-webkit.flavor" value="" /> <!-- -sdk for dev build -->
+  <property name="nwjs.helper.version" value="59.0.3071.104" />
+
+  <property name="plist.exec" location="/usr/libexec/PlistBuddy" />
 
   <condition property="db-derby">
     <isset property="env.ZIMBRA_OFFLINE_USE_DERBY" />
@@ -297,7 +310,7 @@
       <property name="zimbra.buildinfo.release" value="${offline.buildid}"/>
   	</ant>
     <unzip src="${zimbra.warfile}" dest="${dist.dir}/jetty/webapps/zimbra" overwrite="true"/>
-    <delete dir="${dist.dir}/jetty/webapps/zimbra/help"/>
+    <delete dir="${dist.dir}/jetty/webapps/zimbra/help" failonerror="false"/>
     <tstamp><format property="build.simpleDate" pattern="yyMMddHHmmss" /></tstamp>
     <copy file="${config.dir}/web_zimbra.xml" tofile="${dist.dir}/jetty/webapps/zimbra/WEB-INF/web.xml" overwrite="true">
       <filterset>
@@ -353,6 +366,8 @@
     <delete dir="${dist.dir}/jetty/webapps/zimbra/skins/waves"/>
     <delete dir="${dist.dir}/jetty/webapps/zimbra/skins/yahoo"/>
     <delete dir="${dist.dir}/jetty/webapps/zimbra/skins/zmail"/>
+    <!-- for now remove harmony skin, remove this when bug:106386 is fixed -->
+    <delete dir="${dist.dir}/jetty/webapps/zimbra/skins/harmony"/>
     <delete dir="${dist.dir}/jetty/webapps/zimbra/test"/>
     <delete dir="${dist.dir}/jetty/webapps/zimbra/yui"/>
   </target>
@@ -737,6 +752,7 @@
         </chmod>
         <copy tofile="${zimbra.offline.app.dir}/lib/libzimbra-native.jnilib" file="../ZimbraServer/lib/libzimbra-native.jnilib.MacOSX" overwrite="true"/>
         <copy tofile="${zimbra.offline.app.dir}/lib/libzimbra-native.so" file="../ZimbraServer/lib/libzimbra-native.so.Linux.i386" overwrite="true"/>
+        <copy tofile="${zimbra.offline.app.dir}/lib/libzimbra-native.so.amd64" file="../ZimbraServer/lib/libzimbra-native.so.Linux.amd64" overwrite="true"/>
       </then>
     </if>
     <mkdir dir="${zimbra.heapdump.dir}" />
@@ -882,6 +898,7 @@
 
     <copy file="${config.dir}/jetty.xml" todir="${dist.data.dir}/jetty/etc" overwrite="true"/>
     <copy tofile="${dist.data.dir}/bin/zdesktop" file="src/bin/zdesktop" overwrite="true"/>
+    <copy tofile="${dist.data.dir}/bin/zdesktop_64" file="src/bin/zdesktop_64" overwrite="true"/>
 
     <!-- update configs -->
     <replace file="${dist.data.dir}/conf/log4j.properties" token="@install.data.root@" value="${param.data.dir}"/>
@@ -891,6 +908,8 @@
     <replace file="${dist.app.dir}/jetty/etc/webdefault.xml" token="@production@" value="${param.production}"/>
     <replace file="${dist.data.dir}/bin/zdesktop" token="@install.app.root@" value="${param.app.dir}"/>
     <replace file="${dist.data.dir}/bin/zdesktop" token="@install.data.root@" value="${param.data.dir}"/>
+    <replace file="${dist.data.dir}/bin/zdesktop_64" token="@install.app.root@" value="${param.app.dir}"/>
+    <replace file="${dist.data.dir}/bin/zdesktop_64" token="@install.data.root@" value="${param.data.dir}"/>
 		<if>
 			<isset property="is-windows"/>
 			<then>
@@ -898,6 +917,7 @@
 			</then>
 			<else>
 				<set-assert-flag file="${dist.data.dir}/bin/zdesktop"/>
+                <set-assert-flag file="${dist.data.dir}/bin/zdesktop_64"/>
 			</else>
 		</if>
 
@@ -911,12 +931,14 @@
         		<isset property="is-linux"/>
         	    <then>
                     <replace file="${dist.data.dir}/bin/zdesktop" token="@install.platform@" value="Linux"/>
+                    <replace file="${dist.data.dir}/bin/zdesktop_64" token="@install.platform@" value="Linux"/>
         		</then>
         	</if>
         </else>
     </if>
 
   	<chmod file="${dist.data.dir}/bin/zdesktop" perm="ugo+x" />
+    <chmod file="${dist.data.dir}/bin/zdesktop_64" perm="ugo+x" />
 
     <antcall target="offline-make-dist-ext"/>
   	<!-- remove unneeded -->
@@ -957,238 +979,346 @@
   </target>
 
   <target name="offline-prep-launcher">
-    <copy tofile="${dist.app.dir}/lib/libzimbra-native.jnilib" file="../ZimbraServer/lib/libzimbra-native.jnilib.MacOSX" overwrite="true"/>
-    <copy tofile="${dist.app.dir}/lib/libzimbra-native.so" file="../ZimbraServer/lib/libzimbra-native.so.Linux.i386" overwrite="true"/>
-
     <copy todir="${dist.app.dir}" overwrite="true">
       <fileset dir="src/installer" includes="README.txt" />
       <fileset dir="src/installer" includes="open_source_licenses.txt" />
       <fileset dir="src/installer" includes="JCharset*Agreement.txt" />
     </copy>
-        <copy todir="${dist.app.dir}/win32" file="src/installer/win32/zdrun.vbs" overwrite="true" />
-        <copy todir="${dist.app.dir}/win32" file="src/installer/win32/zdesktop.exe" overwrite="true" />
-        <copy todir="${dist.app.dir}/win32" file="src/installer/win32/msvcr71.dll" overwrite="true" />
-        <copy todir="${dist.app.dir}/win32" file="src/installer/win32/msvcr100.dll" overwrite="true" />
-        <copy todir="${dist.app.dir}/win32" file="src/installer/win32/sqlite3.exe" overwrite="true" />
+
     <replace file="${dist.app.dir}/README.txt" token="@version@" value="${offline.version} (build ${offline.buildid})"/>
-    <replace file="${dist.app.dir}/win32/zdrun.vbs" token="@version@" value="${offline.version} build ${offline.buildid} (32-bit)" />
 
-        <copy todir="${dist.app.dir}/win64" file="src/installer/winX64/zdrun.vbs" overwrite="true" />
-        <copy todir="${dist.app.dir}/win64" file="src/installer/winX64/zdesktop.exe" overwrite="true" />
-        <copy todir="${dist.app.dir}/win64" file="src/installer/winX64/msvcr71.dll" overwrite="true" />
-        <copy todir="${dist.app.dir}/win64" file="src/installer/winX64/msvcr100.dll" overwrite="true" />
-        <copy todir="${dist.app.dir}/win64" file="src/installer/winX64/sqlite3.exe" overwrite="true" />
-    <replace file="${dist.app.dir}/win64/zdrun.vbs" token="@version@" value="${offline.version} build ${offline.buildid} (64-bit)" />
+    <!-- Windows 32 bit -->
+    <antcall target="offline-prep-launcher-windows">
+        <param name="arch" value="win32"/>
+    </antcall>
+    <!-- Windows 64 bit -->
+    <antcall target="offline-prep-launcher-windows">
+        <param name="arch" value="win64"/>
+    </antcall>
 
-    <copy todir="${dist.data.dir}/zdesktop.webapp" overwrite="true">
-      <fileset dir="src/installer/webapp" />
-    </copy>
-    <copy tofile="${dist.data.dir}/zdesktop.webapp/icons/default/launcher.icns" file="src/installer/resources/launcher_128x128.icns" overwrite="true"/>
-    <copy tofile="${dist.data.dir}/zdesktop.webapp/icons/default/launcher.png" file="src/installer/resources/launcher_48x48.png" overwrite="true"/>
-    <copy tofile="${dist.data.dir}/zdesktop.webapp/icons/default/launcher.ico" file="src/installer/resources/launcher_128x128.ico" overwrite="true"/>
-    <copy tofile="${dist.data.dir}/zdesktop.webapp/icons/default/newmail.png" file="src/installer/resources/newmail_16x16.png" overwrite="true"/>
+    <antcall target="offline-prep-launcher-mac" />
+    <antcall target="offline-prep-launcher-linux" />
+  </target>
+
+  <target name="offline-prep-launcher-windows" if="is-windows">
+    <copy todir="${dist.app.dir}/${arch}" file="src/installer/${arch}/zdrun.vbs" overwrite="true" />
+    <copy todir="${dist.app.dir}/${arch}" file="src/installer/${arch}/zdesktop.exe" overwrite="true" />
+    <copy todir="${dist.app.dir}/${arch}" file="src/installer/${arch}/msvcr71.dll" overwrite="true" />
+    <copy todir="${dist.app.dir}/${arch}" file="src/installer/${arch}/msvcr100.dll" overwrite="true" />
+    <copy todir="${dist.app.dir}/${arch}" file="src/installer/${arch}/sqlite3.exe" overwrite="true" />
+
+    <if><equals arg1="${arch}" arg2="win32"/>
+        <then>
+            <replace file="${dist.app.dir}/${arch}/zdrun.vbs" token="@version@" value="${offline.version} build ${offline.buildid} (32-bit)" />
+        </then>
+    <else>
+        <replace file="${dist.app.dir}/win64/zdrun.vbs" token="@version@" value="${offline.version} build ${offline.buildid} (64-bit)" />
+    </else>
+    </if>
+  	
+    <mkdir dir="${dist.app.dir}/${arch}"/>
+
+    <!-- This will be called twice for win32 and win64, so execute it only once -->
+    <if><equals arg1="${arch}" arg2="win32"/>
+        <then>
+            <copy todir="${dist.app.dir}" overwrite="true">
+                <fileset dir="node-webkit"/>
+            </copy>
+        </then>
+    </if>
+
+    <!--
+      Call offline-node-webkit-icon-update target to update application icon
+      Comments on new target:
+      1.) Copy Zimbra Desktop icon file
+      2.) Execute windows command-line target to change node-webkit executable icon using Third Party tool called RCEdit
+      3.) Merge nw.exe and package.nw (new Zimbra app) to spit out zdclient.exe
+    -->
+
+    <antcall target="offline-node-webkit-icon-update">
+        <param name="arch" value="${arch}"/>
+    </antcall>
+  </target>
+
+  <target name="offline-prep-launcher-mac" if="is-mac">
+    <copy tofile="${dist.app.dir}/lib/libzimbra-native.jnilib" file="../ZimbraServer/lib/libzimbra-native.jnilib.MacOSX" overwrite="true"/>
 
     <mkdir dir="${dist.app.dir}/macos"/>
-    <mkdir dir="${dist.app.dir}/linux"/>
-    <mkdir dir="${dist.app.dir}/win32"/>
-    <mkdir dir="${dist.app.dir}/win64"/>
 
     <copy todir="${dist.app.dir}/macos" overwrite="true">
       <fileset dir="src/installer/macos" includes="launchd.plist quit_zdesktop.applescript" />
       <fileset dir="src/installer/resources" includes="launcher_128x128.icns" />
     </copy>
     <chmod file="${dist.app.dir}/macos/svckill.msh" perm="ugo+x"/>
+    <exec executable="cp">
+        <arg value="-av"/><!--To preserve links -->
+        <arg value="${dist.app.dir}/macos/node-webkit/nwjs${node-webkit.flavor}-v${node-webkit.version}-osx-x64/nwjs.app"/>
+        <arg value="${dist.app.dir}/macos/Zimbra Desktop.app"/>
+    </exec>
+    <delete dir="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/Resources" excludes="en.lproj" />
     <copy todir="${dist.app.dir}/macos/Zimbra Desktop.app" overwrite="true">
-      <fileset dir="src/installer/macos.app" includes="*/**" />
+        <fileset dir="src/installer/macos.app" />
     </copy>
-    <copy todir="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/MacOS/" file="${dist.app.dir}/macos/prism/Prism.app/Contents/MacOS/prism"/>
-    <chmod file="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/MacOS/prism" perm="ugo+x"/>
-    <chmod file="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/MacOS/zdrun" perm="ugo+x"/>
-    <chmod file="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/MacOS/reopen" perm="ugo+x"/>
-    <replace file="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/Info.plist" token="@version@" value="${offline.version}"/>
+
+    <antcall target="offline-plist-modify-mac" />
+
+    <copy todir="${dist.app.dir}" overwrite="true">
+        <fileset dir="node-webkit"/>
+    </copy>
+
+    <chmod dir="${dist.app.dir}/macos/Zimbra Desktop.app" includes="**/Contents/MacOS/**" perm="ugo+x"/>
+
+    <move file="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/Versions/${nwjs.helper.version}/nwjs Helper.app" tofile="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/Versions/${nwjs.helper.version}/nwjs Helper.app"/>
+    <chmod dir="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/Versions/${nwjs.helper.version}/nwjs Framework.framework" includes="nwjs Framework" perm="ugo+x"/>
+
+    <!-- Give execute permission so crash dumps can be created -->
+    <chmod dir="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/Versions/${nwjs.helper.version}/nwjs Framework.framework/Helpers" includes="crashpad_handler" perm="ugo+x"/>
+
+    <antcall target="offline-update-manifest">
+        <param name="platform" value="macos"/>
+    </antcall>
+
+    <exec executable="npm" dir="${dist.app.dir}">
+        <arg value="install"/>
+    </exec>
+  </target>
+
+  <!-- Target to update info.plist file, which is copied from NWJS bundle -->
+  <target name="offline-plist-modify-mac" if="is-mac">
+    <property name="plist.file" location="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/Info.plist" />
+
+    <!-- Update ZD Bundle Version -->
+    <exec executable="${plist.exec}">
+      <arg value="-c" />
+      <arg value="Set :CFBundleVersion ${offline.version}" />
+      <arg value="-c" />
+      <arg value="Set :CFBundleShortVersionString ${offline.version}" />
+      <arg value="${plist.file}" />
+    </exec>
+
+    <!-- Update ZD Bundle Executable -->
+    <exec executable="${plist.exec}">
+      <arg value="-c" />
+      <arg value="Set :CFBundleExecutable zdrun" />
+      <arg value="${plist.file}" />
+    </exec>
+
+    <!-- Update ZD Bundle Icon -->
+    <exec executable="${plist.exec}">
+      <arg value="-c" />
+      <arg value="Set :CFBundleIconFile launcher_128x128" />
+      <arg value="${plist.file}" />
+    </exec>
+
+    <!-- Update ZD Bundle Identifier -->
+    <exec executable="${plist.exec}">
+      <arg value="-c" />
+      <arg value="Set :CFBundleIdentifier com.zimbra.zdclient" />
+      <arg value="${plist.file}" />
+    </exec>
+
+    <!-- Update ZD Bundle Name -->
+    <exec executable="${plist.exec}">
+      <arg value="-c" />
+      <arg value="Set :CFBundleName 'Zimbra Desktop'" />
+      <arg value="-c" />
+      <arg value="Set :CFBundleDisplayName 'Zimbra Desktop'" />
+      <arg value="${plist.file}" />
+      <!-- Localization not required for application name -->
+      <arg value="-c" />
+      <arg value="Set :LSHasLocalizedDisplayName 0" />
+    </exec>
+
+    <!-- Remove Document Types, this is used in open with file menu to integrate ZD with different file types, but we don't want it now -->
+    <exec executable="${plist.exec}">
+      <arg value="-c" />
+      <arg value="Delete :CFBundleDocumentTypes" />
+      <arg value="${plist.file}" />
+    </exec>
+
+    <!-- Copyright string which is shown in about dialog -->
+    <!-- <exec executable="${plist.exec}">
+      <arg value="-c" />
+      <arg value="Add :NSHumanReadableCopyright string 'Portions Copyright @ 2008-2016 Synacor, Inc. \nAll rights reserved.'" />
+      <arg value="-c" />
+      <arg value="Add :CFBundleGetInfoString string 'Portions Copyright @ 2008-2016 Synacor, Inc. \nAll rights reserved.'" />
+      <arg value="${plist.file}" />
+    </exec> -->
+
+    <!-- Add mailto as supported url type -->
+    <exec executable="${plist.exec}">
+      <arg value="-c" />
+      <arg value="Add :CFBundleURLTypes: dict" />
+      <arg value="-c" />
+      <arg value="Add :CFBundleURLTypes:3:CFBundleTypeRole string 'None'" />
+      <arg value="-c" />
+      <arg value="Add :CFBundleURLTypes:3:CFBundleURLName string 'Mailto Link'" />
+      <arg value="-c" />
+      <arg value="Add :CFBundleURLTypes:3:CFBundleURLSchemes array" />
+      <arg value="-c" />
+      <arg value="Add :CFBundleURLTypes:3:CFBundleURLSchemes:0 string 'mailto'" />
+      <arg value="${plist.file}" />
+    </exec>
+
+  </target>
+
+  <target name="offline-prep-launcher-linux" if="is-linux">
+    <copy tofile="${dist.app.dir}/lib/libzimbra-native.so" file="../ZimbraServer/lib/libzimbra-native.so.Linux.i386" overwrite="true"/>
+    <copy tofile="${dist.app.dir}/lib/libzimbra-native.so.amd64" file="../ZimbraServer/lib/libzimbra-native.so.Linux.amd64" overwrite="true"/>
+
+    <mkdir dir="${dist.app.dir}/linux"/>
+
+    <copy todir="${dist.app.dir}" overwrite="true">
+        <fileset dir="node-webkit"/>
+    </copy>
 
     <copy todir="${dist.app.dir}/linux" overwrite="true">
       <fileset dir="src/installer/linux" includes="zd.desktop user-install.pl" />
     </copy>
     <chmod file="${dist.app.dir}/linux/user-install.pl" perm="ugo+x"/>
     <chmod file="${dist.app.dir}/linux/zd.desktop" perm="ugo+x"/>
-
-    <copy todir="${dist.app.dir}/win32/prism" file="src/installer/win32/prism/application.ini" overwrite="true"/>
-    <copy todir="${dist.app.dir}/win64/prism" file="src/installer/winX64/prism/application.ini" overwrite="true"/>
-
-  </target>
-
-  <property name="prism.version.macos" value="090211"/>
-  <property name="prism.version.win32" value="090211"/>
-  <property name="prism.version.win64" value="090211"/>
-  <property name="prism.version.linux" value="090211"/>
-  <property name="prism.extroot.macos" value="${dist.app.dir}/macos/prism/Prism.app/Contents/Resources"/>
-  <property name="prism.extroot.win32" value="${dist.app.dir}/win32/prism"/>
-  <property name="prism.extroot.win64" value="${dist.app.dir}/win64/prism"/>
-  <property name="prism.extroot.linux" value="${dist.app.dir}/linux/prism"/>
-
-  <macrodef name="translate-prism-files">
-    <attribute name="language"/>
-    <attribute name="country" default=""/>
-    <attribute name="extroot"/>
-    <sequential>
-      <if> <equals arg1="@{country}" arg2=""/>
-        <then><var name="locale" value="@{language}"/></then>
-        <else><var name="locale" value="@{language}-@{country}"/></else>
-      </if>
-      <translate toDir="${build.dir}/prism/chrome/${locale}/branding" starttoken="@" endtoken="@"
-        bundle="src/installer/messages_utf8/ZiMsg" bundlelanguage="@{language}" bundlecountry="@{country}"
-          forceoverwrite="yes" srcencoding="UTF8" destencoding="UTF8">
-        <fileset dir="prism/i18n" includes="*.dtd *.properties"/>
-      </translate>
-      <copy file="${build.dir}/prism/chrome/${locale}/branding/brand.dtd" todir="@{extroot}/chrome/${locale}/branding"/>
-      <copy file="${build.dir}/prism/chrome/${locale}/branding/brand.properties" todir="@{extroot}/chrome/${locale}/branding"/>
-      <copy file="${build.dir}/prism/chrome/${locale}/branding/webrunner.dtd" todir="@{extroot}/chrome/${locale}"/>
-      <copy file="${build.dir}/prism/chrome/${locale}/branding/about.dtd" todir="@{extroot}/chrome/${locale}"/>
-      <mkdir dir="@{extroot}/chrome/${locale}/webapp"/>
-      <copy file="${build.dir}/prism/chrome/${locale}/branding/webapp.properties" todir="@{extroot}/chrome/${locale}/webapp"/>
-    </sequential>
-  </macrodef>
-
-  <macrodef name="patch-prism-files">
-    <attribute name="os"/>
-    <attribute name="version"/>
-    <attribute name="extroot"/>
-    <attribute name="prism-src-location"/>
-
-    <sequential>
-      <copy todir="${dist.app.dir}/@{os}/prism/" overwrite="true">
-        <fileset dir="${prism.src.dir}/@{prism-src-location}/@{version}/patches/" includes="*/**"/>
-      </copy>
-
-      <replace file="@{extroot}/defaults/preferences/preferences.js" token="@version@" value="${offline.version}"/>
-      <replace file="@{extroot}/defaults/preferences/preferences.js" token="@channel@" value="${offline.channel}"/>
-      <replace file="@{extroot}/defaults/preferences/preferences.js" token="@buildid@" value="${offline.buildid}"/>
-      <replace file="@{extroot}/defaults/preferences/preferences.js" token="@buildos@" value="@{os}"/>
-      <replace file="@{extroot}/chrome/webrunner/content/about.js" token="@version@" value="${offline.version}"/>
-      <replace file="@{extroot}/chrome/webrunner/content/about.js" token="@buildid@" value="${offline.buildid}"/>
-      <replace file="@{extroot}/chrome/webrunner/content/about.js" token="@relabel@" value="${offline.relabel}"/>
-
-      <copy tofile="@{extroot}/components/ForceOnline.js" file="prism/components/ForceOnline.js" overwrite="true"/>
-          <copy tofile="@{extroot}/chrome/chrome.manifest" file="prism/i18n/chrome.manifest" overwrite="true"/>
-
-      <translate-prism-files extroot="@{extroot}" language="en" country="US"/>
-      <translate-prism-files extroot="@{extroot}" language="fr"/>
-      <translate-prism-files extroot="@{extroot}" language="da"/>
-      <translate-prism-files extroot="@{extroot}" language="de"/>
-      <translate-prism-files extroot="@{extroot}" language="en" country="AU"/>
-      <translate-prism-files extroot="@{extroot}" language="en" country="GB"/>
-      <translate-prism-files extroot="@{extroot}" language="es" country="ES"/>
-      <translate-prism-files extroot="@{extroot}" language="it"/>
-      <translate-prism-files extroot="@{extroot}" language="ja"/>
-      <translate-prism-files extroot="@{extroot}" language="ko"/>
-      <translate-prism-files extroot="@{extroot}" language="nl"/>
-      <translate-prism-files extroot="@{extroot}" language="pl"/>
-      <translate-prism-files extroot="@{extroot}" language="pt" country="BR"/>
-      <translate-prism-files extroot="@{extroot}" language="ru"/>
-      <translate-prism-files extroot="@{extroot}" language="sv"/>
-      <translate-prism-files extroot="@{extroot}" language="zh" country="CN"/>
-      <translate-prism-files extroot="@{extroot}" language="zh" country="HK"/>
-    </sequential>
-  </macrodef>
-
-  <target name="offline-prep-prism">
-    <!-- unzip original prism drops to dist dirs -->
-    <unzip src="${prism.src.dir}/macos/${prism.version.macos}/drop/prism-${prism.version.macos}.macos.zip" dest="${dist.app.dir}/macos/prism" overwrite="true"/>
-    <unzip src="${prism.src.dir}/win32/${prism.version.win32}/drop/prism-${prism.version.win32}.win32.zip" dest="${dist.app.dir}/win32/prism" overwrite="true"/>
-    <unzip src="${prism.src.dir}/win32/${prism.version.win32}/drop/prism-${prism.version.win32}.win32.zip" dest="${dist.app.dir}/win64/prism" overwrite="true"/>
-    <unzip src="${prism.src.dir}/linux/${prism.version.linux}/drop/prism-${prism.version.linux}.linux.zip" dest="${dist.app.dir}/linux/prism" overwrite="true"/>
-
-    <!-- delete unused refractor extensions from win32 and linux -->
-    <delete dir="${dist.app.dir}/linux/prism/extensions/refractor@developer.mozilla.org"/>
-
-    <!-- apply patches and i18n works -->
-    <native2ascii reverse="true" encoding="UTF8" src="src/installer/messages" dest="src/installer/messages_utf8" includes="*.properties" />
-    <patch-prism-files os="macos" version="${prism.version.macos}" extroot="${prism.extroot.macos}" prism-src-location="macos"/>
-    <patch-prism-files os="win32" version="${prism.version.win32}" extroot="${prism.extroot.win32}" prism-src-location="win32"/>
-    <patch-prism-files os="win64" version="${prism.version.win64}" extroot="${prism.extroot.win64}" prism-src-location="win32"/>
-    <patch-prism-files os="linux" version="${prism.version.linux}" extroot="${prism.extroot.linux}" prism-src-location="linux"/>
-
-    <!-- rename prism executables on win32 and linux to zdclient -->
-    <move file="${dist.app.dir}/win32/prism/prism.exe" tofile="${dist.app.dir}/win32/prism/zdclient.exe" overwrite="true"/>
-    <move file="${dist.app.dir}/win64/prism/prism.exe" tofile="${dist.app.dir}/win64/prism/zdclient.exe" overwrite="true"/>
-    <move file="${dist.app.dir}/linux/prism/prism" tofile="${dist.app.dir}/linux/prism/zdclient" overwrite="true"/>
-    <chmod file="${dist.app.dir}/linux/prism/zdclient" perm="ugo+x"/>
-
-    <!-- use firefox xulrunner to replace the one comes with prism -->
-<!--
-    <delete>
-      <fileset dir="${dist.app.dir}/macos/prism/Prism.app/Contents/Frameworks/XUL.framework"/>
-      <fileset dir="${dist.app.dir}/win32/prism/xulrunner"/>
-      <fileset dir="${dist.app.dir}/linux/prism/xulrunner"/>
-    </delete>
-    <unzip src="${xulrunner.src.dir}/1.9.0.1/xulrunner-1.9.0.1.en-US.macos.zip" dest="${dist.app.dir}/macos/prism/Prism.app/Contents/Frameworks"/>
-    <unzip src="${xulrunner.src.dir}/1.9.0.1/xulrunner-1.9.0.1.en-US.win32.zip" dest="${dist.app.dir}/win32/prism"/>
-    <unzip src="${xulrunner.src.dir}/1.9.0.1/xulrunner-1.9.0.1.en-US.linux.zip" dest="${dist.app.dir}/linux/prism"/>
--->
-    <copy todir="${dist.app.dir}/macos/prism/Prism.app/Contents/Frameworks/XUL.framework/chrome" overwrite="true">
-      <fileset dir="${xulrunner.src.dir}/locales" includes="*.manifest *.jar"/>
-    </copy>
-    <copy todir="${dist.app.dir}/win32/prism/xulrunner/chrome" overwrite="true">
-      <fileset dir="${xulrunner.src.dir}/locales" includes="*.manifest *.jar"/>
-    </copy>
-    <copy todir="${dist.app.dir}/win64/prism/xulrunner/chrome" overwrite="true">
-      <fileset dir="${xulrunner.src.dir}/locales" includes="*.manifest *.jar"/>
-    </copy>
-    <copy todir="${dist.app.dir}/linux/prism/xulrunner/chrome" overwrite="true">
-      <fileset dir="${xulrunner.src.dir}/locales" includes="*.manifest *.jar"/>
-    </copy>
-
-    <!-- patch xulrunner with our update service mod -->
-    <copy tofile="${dist.app.dir}/macos/prism/Prism.app/Contents/Frameworks/XUL.framework/updater.app/Contents/MacOS/updater" file="src/installer/updater/macos/updater" overwrite="true"/>
-    <chmod file="${dist.app.dir}/macos/prism/Prism.app/Contents/Frameworks/XUL.framework/updater.app/Contents/MacOS/updater" perm="ugo+x"/>
-    <copy tofile="${dist.app.dir}/win32/prism/xulrunner/updater.exe" file="src/installer/updater/win32/updater.exe" overwrite="true"/>
-    <copy tofile="${dist.app.dir}/win64/prism/xulrunner/updater.exe" file="src/installer/updater/win32/updater.exe" overwrite="true"/>
-    <copy tofile="${dist.app.dir}/linux/prism/xulrunner/updater" file="src/installer/updater/linux/updater" overwrite="true"/>
-    <chmod file="${dist.app.dir}/linux/prism/xulrunner/updater" perm="ugo+x"/>
-
-    <!-- set permissions executibles -->
-    <chmod dir="${dist.app.dir}/macos/prism/Prism.app/Contents/Frameworks/XUL.framework/" perm="ugo+x" includes="*/**"/>
-    <chmod file="${dist.app.dir}/macos/prism/Prism.app/Contents/MacOS/prism" perm="ugo+x"/>
-    <chmod file="${dist.app.dir}/linux/prism/prism" perm="ugo+x"/>
-
-    <!-- fix things that are specific to each platform -->
-    <copy tofile="${dist.app.dir}/macos/prism/Prism.app/Contents/Resources/chrome/webrunner/content/icon128.png" file="src/installer/resources/launcher_128x128.png" overwrite="true"/>
-    <copy tofile="${dist.app.dir}/win32/prism/chrome/webrunner/content/icon128.png" file="src/installer/resources/launcher_128x128.png" overwrite="true"/>
-    <copy tofile="${dist.app.dir}/win64/prism/chrome/webrunner/content/icon128.png" file="src/installer/resources/launcher_128x128.png" overwrite="true"/>
-    <copy tofile="${dist.app.dir}/linux/prism/chrome/webrunner/content/icon128.png" file="src/installer/resources/launcher_128x128.png" overwrite="true"/>
-
-    <!-- unzip zimbra drag and drop extension -->
-    <ant dir="../ZimbraWebClient" target="ffext-reset-the-world" inheritAll="false"/>
-    <mkdir dir="${dist.data.dir}/profile/extensions/zimbradnd@zimbra.com"/>
-    <unzip src="../ZimbraWebClient/ffext/build/ZimbraDnD.xpi" dest="${dist.data.dir}/profile/extensions/zimbradnd@zimbra.com" overwrite="true"/>
-
-    <!-- unzip zimbra mapi extension for windows -->
-    <if><isset property="is-windows" /><then>
-        <unzip src="src/installer/extensions/zimbramapi-0.6.xpi" dest="${dist.app.dir}/win32/prism/extensions/mapi@zimbra.com" overwrite="true"/>
-    </then></if>
-    <if><isset property="is-windows" /><then>
-        <unzip src="src/installer/extensions/zimbramapi-0.6.xpi" dest="${dist.app.dir}/win64/prism/extensions/mapi@zimbra.com" overwrite="true"/>
-    </then></if>
-
-    <!-- unzip inquisitor extension
-    <mkdir dir="${dist.data.dir}/profile/extensions/Inquisitor@yahoo"/>
-    <unzip src="src/installer/extensions/inquisitor4prism.xpi" dest="${dist.data.dir}/profile/extensions/Inquisitor@yahoo" overwrite="true"/>
-    -->
-
-    <!-- override default settings in profile -->
-    <copy todir="${dist.data.dir}/profile" file="prism/profile/user.js" overwrite="true" />
-
-    <!-- copy updated certificate database file cert8.db from Firefox -->
-    <copy todir="${dist.data.dir}/profile" file="prism/profile/cert8.db" overwrite="true" />
-
-    <!-- any non-branding patches that are between prism drops should go here -->
+    <antcall target="offline-update-manifest">
+        <param name="platform" value="linux"/>
+    </antcall>
 
   </target>
 
-  <target name="test-launcher-mac">
-    <replace file="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/Resources/application.ini" token="@install@" value="${dist.dir}"/>
-    <replace file="${dist.app.dir}/macos/Zimbra Desktop.app/Contents/Resources/extensions/prism-runtime@developer.mozilla.org" token="@install@" value="${dist.dir}"/>
+  <target name="offline-prep-node-webkit">
+    <!-- Windows 32 bit -->
+    <antcall target="offline-prep-node-webkit-windows">
+        <param name="arch" value="win32"/>
+    </antcall>
+    <!-- Windows 64 bit -->
+    <antcall target="offline-prep-node-webkit-windows">
+        <param name="arch" value="win64"/>
+    </antcall>
+
+    <!-- Linux 32 bit -->
+    <antcall target="offline-prep-node-webkit-linux">
+        <param name="arch" value="linux32"/>
+    </antcall>
+    <!-- Linux 64 bit -->
+    <antcall target="offline-prep-node-webkit-linux">
+        <param name="arch" value="linux64"/>
+    </antcall>
+
+    <antcall target="offline-prep-node-webkit-mac"/>
+  </target>
+
+  <target name="offline-prep-node-webkit-windows" if="is-windows">
+    <!-- unzip original node-webkit drops to dist dirs -->
+    <if>
+        <equals arg1="${arch}" arg2="win32"/>
+        <then>
+            <unzip src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-win-ia32.zip" dest="${dist.app.dir}/${arch}/node-webkit" overwrite="true">
+                <cutdirsmapper dirs="1"/>
+            </unzip>
+        </then>
+    <else>
+        <unzip src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-win-x64.zip" dest="${dist.app.dir}/${arch}/node-webkit" overwrite="true">
+            <cutdirsmapper dirs="1"/>
+        </unzip>
+    </else>
+    </if>
+
+    <antcall target="offline-update-manifest-windows">
+        <param name="platform" value="${arch}"/>
+    </antcall>
+
+    <exec executable="cmd" dir="${dist.app.dir}/${arch}/nw" failonerror="true">
+      <arg value="/C" />
+      <arg value="npm" />
+      <arg value="install"/>
+    </exec>
+
+    <!-- apply patches -->
+    <zip destfile="${dist.app.dir}/${arch}/node-webkit/package.nw" basedir="${dist.app.dir}/${arch}/nw" update="true"/>
+
+    <!-- unzip zimbra mapi extension for windows(used for mailto protocol)-->
+    <unzip src="src/installer/${arch}/extensions/zimbramapi-0.8.zip" dest="${dist.app.dir}/${arch}/node-webkit/extensions/zimbramapi" overwrite="true"/>
+  </target>
+
+  <target name="offline-prep-node-webkit-mac" if="is-mac">
+    <mkdir dir="${dist.app.dir}/macos/node-webkit" />
+    <!-- unzip original node-webkit drops to dist dirs -->
+    <!-- For MAC OSX: nw package comes with symbolic links and unzip ant task does not preserve sym links. Hence native unzip cmd is used -->
+    <exec command="unzip">
+      <arg value="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-osx-x64.zip"/>
+      <arg line="-d"/>
+      <arg line="${dist.app.dir}/macos/node-webkit"/>
+    </exec>
+  </target>
+
+  <target name="offline-prep-node-webkit-linux" if="is-linux">
+
+    <!-- Define different directories based on architecture -->
+    <if>
+        <equals arg1="${arch}" arg2="linux32"/>
+        <then>
+            <property name="node-webkit-dir" value="node-webkit"/>
+        </then>
+    <else>
+        <property name="node-webkit-dir" value="node-webkit-x64"/>
+    </else>
+    </if>
+
+    <!-- unzip original node-webkit drops to dist dirs -->
+    <if>
+        <equals arg1="${arch}" arg2="linux32"/>
+        <then>
+            <untar src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-linux-ia32.tar.gz" dest="${dist.app.dir}/linux" overwrite="true" compression="gzip"/>
+
+            <move file="${dist.app.dir}/linux/nwjs${node-webkit.flavor}-v${node-webkit.version}-linux-ia32" tofile="${dist.app.dir}/linux/${node-webkit-dir}" overwrite="true"/>
+        </then>
+    <else>
+        <untar src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-linux-x64.tar.gz" dest="${dist.app.dir}/linux" overwrite="true" compression="gzip"/>
+
+        <move file="${dist.app.dir}/linux/nwjs${node-webkit.flavor}-v${node-webkit.version}-linux-x64" tofile="${dist.app.dir}/linux/${node-webkit-dir}" overwrite="true"/>
+    </else>
+    </if>
+
+    <move file="${dist.app.dir}/linux/${node-webkit-dir}/nw" tofile="${dist.app.dir}/linux/${node-webkit-dir}/zdesktop" overwrite="true"/>
+    <chmod dir="${dist.app.dir}/linux/${node-webkit-dir}/zdesktop" perm="ugo+x"/>
+
+    <copy todir="${dist.app.dir}/linux/${node-webkit-dir}/">
+        <fileset dir="node-webkit"/>
+    </copy>
+
+    <copy tofile="${dist.app.dir}/linux/${node-webkit-dir}/package.json_orig" file="${dist.app.dir}/linux/${node-webkit-dir}/package.json"/>
+    <copy tofile="${dist.app.dir}/linux/${node-webkit-dir}/launcher_32x32.png" file="src/installer/resources/launcher_32x32.png"/>
+    <copy tofile="${dist.app.dir}/linux/${node-webkit-dir}/zd.desktop" file="src/installer/linux/zd.desktop" overwrite="true" />
+    <chmod file="${dist.app.dir}/linux/${node-webkit-dir}/zd.desktop" perm="ugo+x"/>
+
+    <!-- This will be called twice for 32bit and 64bit, so execute it only once -->
+    <if><equals arg1="${arch}" arg2="linux32"/>
+        <then>
+            <copy tofile="${dist.app.dir}/linux/zdrun.pl" file="src/installer/linux/zdrun.pl"/>
+            <chmod file="${dist.app.dir}/linux/zdrun.pl" perm="ugo+x"/>
+        </then>
+    </if>
+  </target>
+
+  <target name="offline-update-manifest">
+    <replace file="${dist.app.dir}/package.json" token="@version@" value="${offline.version}"/>
+    <replace file="${dist.app.dir}/package.json" token="@buildVersion@" value="${offline.buildid}"/>
+    <replace file="${dist.app.dir}/package.json" token="@channel@" value="${offline.channel}"/>
+    <replace file="${dist.app.dir}/package.json" token="@platform@" value="${platform}"/>
+    <replace file="${dist.app.dir}/package.json" token="@updateHost@" value="${offline.aus.host}"/>
+    <replace file="${dist.app.dir}/package.json" token="@updatePath@" value="${offline.aus.path}/update.php"/>
+  </target>
+
+  <target name="offline-update-manifest-windows">
+    <!-- Copying node-webkit to temporary directory. Manifest file need to be changed on the fly.-->
+    <copy todir="${dist.app.dir}/${arch}/nw">
+        <fileset dir="node-webkit"/>
+    </copy>
+
+    <replace file="${dist.app.dir}/${platform}/nw/package.json" token="@version@" value="${offline.version}"/>
+    <replace file="${dist.app.dir}/${platform}/nw/package.json" token="@buildVersion@" value="${offline.buildid}"/>
+    <replace file="${dist.app.dir}/${platform}/nw/package.json" token="@channel@" value="${offline.channel}"/>
+    <replace file="${dist.app.dir}/${platform}/nw/package.json" token="@platform@" value="${platform}"/>
+    <replace file="${dist.app.dir}/${platform}/nw/package.json" token="@updateHost@" value="${offline.aus.host}"/>
+    <replace file="${dist.app.dir}/${platform}/nw/package.json" token="@updatePath@" value="${offline.aus.path}/update.php"/>
   </target>
 
   <target name="offline-install-misc">
@@ -1201,13 +1331,13 @@
   <target name="offline-make-install-files">
     <antcall target="offline-make-dist">
       <param name="param.app.dir" value="@install.app.root@" />
-          <param name="param.data.dir" value="@install.data.root@" />
+      <param name="param.data.dir" value="@install.data.root@" />
       <param name="param.development" value="false" />
       <param name="param.port" value="0" />
       <param name="param.production" value="true" />
     </antcall>
     <antcall target="offline-install-misc" />
-    <antcall target="offline-prep-prism" />
+    <antcall target="offline-prep-node-webkit" />
     <antcall target="offline-prep-launcher" />
     <antcall target="offline-jspc.build" />
     <antcall target="offline-compress" />
@@ -1339,25 +1469,148 @@
     </delete>
   </target>
 
-  <!--target name="offline-prism-webapp">
-    <copy todir="${build.dir}/webapp" overwrite="true">
-      <fileset dir="src/installer/webapp"/>
-      <fileset dir="src/installer/resources" includes="launcher_32x32.ico,launcher_32x32.icns,launcher_32x32.xpm"/>
-    </copy>
-    <zip destfile="${build.dir}/zdesktop.webapp" basedir="${build.dir}/webapp" />
+  <target name="offline-node-webkit-icon-update">
+    <copy tofile="${dist.app.dir}/${arch}/node-webkit/launcher_128x128.ico" file="src/installer/resources/launcher_128x128.ico" overwrite="true"/>
+
+    <!-- rcedit can be downloaded from https://github.com/atom/node-rcedit/blob/master/bin/rcedit.exe -->
+    <exec dir="C:/rcedit/" executable="cmd" failonerror="true">
+        <arg value="/c"/>
+        <!-- set description of exe, so windows 10 will show zdclient instead of nwjs in task manager -->
+        <arg value='rcedit.exe ${dist.app.dir}/${arch}/node-webkit/nw.exe --set-product-version "${offline.buildid}" --set-icon "${dist.app.dir}/${arch}/node-webkit/launcher_128x128.ico" --set-version-string "FileDescription" "Zimbra Desktop" --set-version-string "ProductName" "Zimbra Desktop" --set-version-string "CompanyName" "Synacor Inc" --set-version-string "LegalCopyright" "Portions Copyright @ 2008-2017 Synacor, Inc. All rights reserved." --set-version-string "OriginalFilename" "zdclient.exe"' />
+    </exec>
+
+    <exec dir="${dist.app.dir}/${arch}/node-webkit/" executable="cmd" failonerror="true">
+      <arg value="/c"/>
+        <arg value='copy /b nw.exe+package.nw zdclient.exe'/>
+    </exec>
+
+    <!-- Remove files as we have combined nw.exe and package.nw to have zdclient.exe -->
+    <delete file="${dist.app.dir}/${arch}/node-webkit/nw.exe" failonerror="false"/>
+    <delete file="${dist.app.dir}/${arch}/node-webkit/package.nw" failonerror="false"/>
+    <delete dir="${dist.app.dir}/${arch}/nw" failonerror="false"/>
   </target>
 
-        <target name="offline-prep-xulrunner">
-    <copy todir="${build.dir}/xulrunner" overwrite="true">
-      <fileset dir="../ThirdParty/xulrunner/1.9b4pre.en-US"/>
-    </copy>
-    <copy tofile="${build.dir}/xulrunner/macos/XUL.framework/components/nsUpdateService.js" file="src/installer/updater/macos/nsUpdateService.js" overwrite="true" />
-    <copy tofile="${build.dir}/xulrunner/macos/XUL.framework/updater.app/Contents/MacOS/updater" file="src/installer/updater/macos/updater" overwrite="true" />
-    <copy tofile="${build.dir}/xulrunner/linux/xulrunner/components/nsUpdateService.js" file="src/installer/updater/linux/nsUpdateService.js" overwrite="true" />
-    <copy tofile="${build.dir}/xulrunner/linux/xulrunner/updater" file="src/installer/updater/linux/updater" overwrite="true" />
-    <copy tofile="${build.dir}/xulrunner/win32/xulrunner/components/nsUpdateService.js" file="src/installer/updater/win32/nsUpdateService.js" overwrite="true" />
-    <copy tofile="${build.dir}/xulrunner/win32/xulrunner/updater.exe" file="src/installer/updater/win32/updater.exe" overwrite="true" />
-  </target-->
+  <!-- Script is used to run application without actually installing ZD -->
+  <target name="offline-node-webkit" depends="start-jetty,offline-dev-sync">
+    <!-- Windows 32 bit -->
+    <antcall target="offline-node-webkit-windows">
+        <param name="arch" value="win32"/>
+    </antcall>
+    <!-- Windows 64 bit -->
+    <antcall target="offline-node-webkit-windows">
+        <param name="arch" value="win64"/>
+    </antcall>
 
+    <!-- Linux 32 bit -->
+    <antcall target="offline-node-webkit-linux">
+        <param name="arch" value="linux32"/>
+    </antcall>
+    <!-- Linux 64 bit -->
+    <antcall target="offline-node-webkit-linux">
+        <param name="arch" value="linux64"/>
+    </antcall>
+
+    <antcall target="offline-node-webkit-mac"/>
+  </target>
+
+  <target name="offline-node-webkit-windows" if="is-windows">
+    <!-- unzip original node-webkit drops to dist dirs -->
+    <if>
+        <equals arg1="${arch}" arg2="win32"/>
+        <then>
+            <unzip src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-win-ia32.zip" dest="${dist.app.dir}/${arch}/node-webkit" overwrite="false">
+                <cutdirsmapper dirs="1"/>
+            </unzip>
+        </then>
+    <else>
+        <unzip src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-win-x64.zip" dest="${dist.app.dir}/${arch}/node-webkit" overwrite="false">
+            <cutdirsmapper dirs="1"/>
+        </unzip>
+    </else>
+    </if>
+
+    <!-- Call offline-node-webkit-icon target to update application icon -->
+    <antcall target="offline-node-webkit-icon-update">
+        <param name="arch" value="${arch}"/>
+    </antcall>
+
+    <exec executable="${dist.app.dir}\${arch}\node-webkit\zdclient.exe" osfamily="windows">
+        <arg value="url=http://${deploy.host}:${deploy.port}?dev=1"/>
+        <arg value="data-path=${zimbra.offline.data.dir}"/>
+    </exec>
+  </target>
+
+  <target name="offline-node-webkit-mac" if="is-mac">
+    <unzip src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-osx-x64.zip" dest="${dist.app.dir}/macos/node-webkit" overwrite="false">
+        <cutdirsmapper dirs="1"/>
+    </unzip>
+
+    <!-- set permissions executable -->
+    <chmod dir="${dist.app.dir}/macos/node-webkit/nwjs${node-webkit.flavor}-v${node-webkit.version}-osx-x64/nwjs.app" includes="**/Contents/MacOS/**" perm="ugo+x"/>
+    <!-- Give execute permission so crash dumps can be created -->
+    <chmod dir="${dist.app.dir}/macos/node-webkit/nwjs${node-webkit.flavor}-v${node-webkit.version}-osx-x64/nwjs.app/Contents/Versions/${nwjs.helper.version}/nwjs Framework.framework/Helpers" includes="crashpad_handler" perm="ugo+x"/>
+
+    <copy todir="${dist.app.dir}/macos/node-webkit/">
+        <fileset dir="node-webkit"/>
+    </copy>
+
+    <copy tofile="${dist.app.dir}/macos/node-webkit/nwjs${node-webkit.flavor}-v${node-webkit.version}-osx-x64/nwjs.app/Contents/Resources/app.icns" file="src/installer/resources/launcher_128x128.icns"/>
+
+    <exec dir="${dist.app.dir}/macos/node-webkit/nwjs${node-webkit.flavor}-v${node-webkit.version}-osx-x64/nwjs.app/Contents/MacOS" executable="./nwjs" osfamily="mac">
+        <arg value="url=http://${deploy.host}:${deploy.port}?dev=1"/>
+        <arg value="data-path=${zimbra.offline.data.dir}"/>
+    </exec>
+  </target>
+
+  <target name="offline-node-webkit-linux" if="is-linux">
+    <!-- Define different directories based on architecture -->
+    <if>
+        <equals arg1="${arch}" arg2="linux32"/>
+        <then>
+            <property name="node-webkit-dir" value="node-webkit"/>
+        </then>
+    <else>
+        <property name="node-webkit-dir" value="node-webkit-x64"/>
+    </else>
+    </if>
+
+    <mkdir dir="${dist.app.dir}/linux/node-tmp"/>
+
+    <!-- unzip original node-webkit drops to dist dirs -->
+    <if>
+        <equals arg1="${arch}" arg2="linux32"/>
+        <then>
+            <gunzip src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-linux-ia32.tar.gz" dest="${dist.app.dir}/linux/node-tmp"/>
+            <untar src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-linux-ia32.tar.gz" dest="${dist.app.dir}/linux/node-tmp" overwrite="true" compression="gzip"/>
+
+            <move file="${dist.app.dir}/linux/node-tmp/node-webkit${node-webkit.flavor}-v${node-webkit.version}-linux-ia32" tofile="${dist.app.dir}/linux/${node-webkit-dir}"/>
+        </then>
+    <else>
+        <gunzip src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-linux-x64.tar.gz" dest="${dist.app.dir}/linux/node-tmp"/>
+        <untar src="${node-webkit.src.dir}/${node-webkit.version}/nwjs${node-webkit.flavor}-v${node-webkit.version}-linux-x64.tar.gz" dest="${dist.app.dir}/linux/node-tmp" overwrite="true" compression="gzip"/>
+
+        <move file="${dist.app.dir}/linux/node-tmp/node-webkit${node-webkit.flavor}-v${node-webkit.version}-linux-x64" tofile="${dist.app.dir}/linux/${node-webkit-dir}"/>
+    </else>
+    </if>
+
+    <delete dir="${dist.app.dir}/linux/node-tmp"/>
+
+    <move file="${dist.app.dir}/linux/${node-webkit-dir}/nw" tofile="${dist.app.dir}/linux/${node-webkit-dir}/zdesktop" overwrite="true"/>
+    <chmod dir="${dist.app.dir}/linux/${node-webkit-dir}/zdesktop" perm="ugo+x"/>
+
+    <copy todir="${dist.app.dir}/linux/${node-webkit-dir}/">
+        <fileset dir="node-webkit"/>
+    </copy>
+
+    <copy tofile="${dist.app.dir}/linux/${node-webkit-dir}/launcher_32x32.png" file="src/installer/resources/launcher_32x32.png"/>
+    <copy tofile="${dist.app.dir}/linux/${node-webkit-dir}/zd.desktop" file="src/installer/linux/zd.desktop" overwrite="true" />
+
+    <chmod file="${dist.app.dir}/linux/${node-webkit-dir}/zd.desktop" perm="ugo+x"/>
+
+    <exec dir="${dist.app.dir}/linux/${node-webkit-dir}/" executable="./zdesktop">
+        <arg value="url=http://${deploy.host}:${deploy.port}?dev=1"/>
+        <arg value="data-path=${zimbra.offline.data.dir}"/>
+    </exec>
+  </target>
 </project>
 

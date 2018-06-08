@@ -462,6 +462,25 @@ function(htmlArr, idx, item, field, colIdx, params) {
 	return idx;
 };
 
+ZmListView.prototype._getDownloadListItemCell = 
+function(fileName, size, time, img) {
+    var data = [];
+    var id = 0;
+    data[id++] = "<table class='ZmDownloadListTable'>";
+    data[id++] = "<tr><td rowspan='2'>";
+    data[id++] = "<div class='";
+    data[id++] = img;
+    data[id++] = "' style='margin-right: 10px;'></div></td>";
+    data[id++] = "<td class='ZmDownloadFileName'>";
+    data[id++] = fileName;
+    data[id++] = "</td></tr><td class='ZmDownloadFileDetails'>";
+    data[id++] = size;
+    data[id++] = " - ";
+    data[id++] = time;
+    data[id++] =  "</td></tr></table>";
+    return data.join("");
+};
+
 ZmListView.prototype._getImageHtml =
 function(htmlArr, idx, imageInfo, id) {
 	imageInfo = imageInfo || "Blank_16";

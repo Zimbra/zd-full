@@ -1,0 +1,89 @@
+/*
+ * 
+ */
+@font-face {
+    font-family: SourceSansPro;
+    src: local("SourceSansPro-Regular"), url(@SkinFontDir@/SourceSansPro-Regular.ttf);
+}
+@font-face {
+    font-family: SourceSansPro;
+    src: local("SourceSansPro-Bold"), url(@SkinFontDir@/SourceSansPro-Bold.ttf);
+    font-weight: bold;
+}
+@font-face {
+    font-family: SourceSansPro;
+    src: local("SourceSansPro-Italic"), url(@SkinFontDir@/SourceSansPro-Italic.ttf);
+    font-style: italic;
+}
+@font-face {
+    font-family: SourceSansPro;
+    src: local("SourceSansPro-BoldItalic"), url(@SkinFontDir@/SourceSansPro-BoldItalic.ttf);
+    font-weight: bold;
+    font-style: italic;
+}
+@font-face {
+    font-family: SourceSansPro;
+    src: local("SourceSansPro-Light"), url(@SkinFontDir@/SourceSansPro-Light.ttf);
+    font-weight: 300;
+}
+@font-face {
+    font-family: SourceSansPro;
+    src: local("SourceSansPro-LightItalic"), url(@SkinFontDir@/SourceSansPro-LightItalic.ttf);
+    font-style: italic;
+    font-weight: 300;
+}
+
+body {
+	@ChromeBg@
+}
+
+#skin_tr_top {
+    background-color: @_PrimaryBrandingColor_@;
+}
+
+#skin_spacing_top_row {
+    height: 65px;
+}
+
+#skin_spacing_top_row .divider {
+    border: none;
+}
+
+#skin_container_app_chooser {
+    height: 40px;
+}
+
+#skin_spacing_app_row { 
+    background-color: @_PrimaryBrandingColor_@;
+    height: 50px;
+}
+
+#skin_spacing_filler {   
+    background-color: @AppC@;
+    background-image: none;
+}
+
+.ZAppTab {
+	@ButtonHeight@
+}
+
+.ZAppTabBorder .ZLeftIcon {
+    /* handle this using template */
+    display: none;
+}
+
+.ZAppTabBorder .ZWidgetTitle {
+    @AppTabText@
+}
+
+#skin_container_links a,
+#skin_userAndQuota .ZmNetworkStatusIcon {
+    @FontSize-small@
+}
+
+#skin_container_links a:link,
+#skin_container_links a:visited,
+#skin_container_links a:hover,
+#skin_container_links a:active {
+    @Text-contrast@
+}

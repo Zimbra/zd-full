@@ -1,0 +1,5 @@
+CFBundleDisplayName = "Zimbra Desktop";
+CFBundleGetInfoString = "nwjs 59.0.3071.104, Copyright 2016 NW.js contributors, Chromium Authors, IO.js. All rights reserved.";
+CFBundleName = "Zimbra Desktop";
+NSContactsUsageDescription = "Details from your contacts can help you fill out forms more quickly in Chromium.";
+NSHumanReadableCopyright = "Portions Copyright @ 2008-2017 Synacor, Inc. \nAll rights reserved.";

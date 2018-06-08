@@ -1,0 +1,8 @@
+LIBRARY "ZimbraMapi"
+
+EXPORTS
+    MAPILogon
+    MAPILogoff
+    MAPISendMail
+    MAPISendMailW
+    MAPISendDocuments

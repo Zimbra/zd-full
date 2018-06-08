@@ -1793,11 +1793,17 @@ function(findHits, includeInlineImages, includeInlineAtts) {
                 props.link = "<a class='AttLink'";
                 if (url.indexOf('javascript:') != 0)
                     props.link += " target='_blank'";
-                props.link += AjxStringUtil.buildAttribute("href", url);
+                var hrefLoc = window.isNodeWebkit ? "javascript:;" : url;
+                props.link += AjxStringUtil.buildAttribute("href", hrefLoc);
                 props.link +=
                     AjxStringUtil.buildAttribute("id", props.attachmentLinkId);
-                props.link += ">";
 
+                //Clicking attachment link with filename will open that file in ZD
+                if (window.isNodeWebkit) {
+                    var onclickStr = "ZmMailMsgView.downloadAndOpenAttachmentCallback(\"" + url +"\");'";
+                    props.link += " onclick='" + onclickStr;
+                }
+                props.link += ">";
 				if (!useCL) {
 					props.download = [
 						"<a style='text-decoration:underline' class='AttLink' href='",

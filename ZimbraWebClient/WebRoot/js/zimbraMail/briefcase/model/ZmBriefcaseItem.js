@@ -62,7 +62,7 @@ function(dontIncludeThisName, ignoreCustomDocs, includeVersion) {
 		url = url + (url.match(/\?/) ? '&' : '?' ) + "ver=" + this.version;
 	}
 
-	return url;
+    return url.replace(/'/g, "%27");
 };
 
 /**
@@ -662,7 +662,7 @@ function(){
     if(this.version){
         restUrl = restUrl + ( restUrl.match(/\?/) ? '&' : '?' ) + "ver="+this.version;
     }
-    return restUrl;
+    return restUrl.replace(/'/g, "%27");
 };
 
 ZmRevisionItem.prototype.getIcon =

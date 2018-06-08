@@ -18,9 +18,7 @@
 		<td class="ZTip"><a href="http://wiki.zimbra.com/index.php?title=Zimbra_Desktop_7_FAQ" target="_blank"><fmt:message key='TipsFaq'/></a></td>
 		<td class="ZDot">&#8226;</td>
 		<td class="ZTip"><a href="http://www.zimbra.com/forums/zimbra-desktop/" target="_blank"><fmt:message key='TipsForums'/></a></td>
-		<c:if test="${zdf:isPrism(userAgent)}">
-			<td class="ZDot">&#8226;</td>
-			<td class="ZTip"><a href="javascript:window.platform.openURI('${zdf:addAuthToken(zdf:getBaseUri(), pageContext.request)}');"><fmt:message key='TipsOpenInBrowser'/></a></td>
-		</c:if>
+		<td class="ZDot">&#8226;</td>
+		<td class="ZTip"><a href="${zdf:addAuthToken(zdf:getBaseUri(), pageContext.request)}" target="_blank" class="js-external-link"><fmt:message key='TipsOpenInBrowser'/></a></td>
 	</tr>
 </table>

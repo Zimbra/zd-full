@@ -445,6 +445,48 @@ function(ev, callback) {
 	AjxDispatcher.run("GetFilterController").hasOutgoingFiltersActive(callback);
 };
 
+ZmPref.onChangeDefaultApp =
+function(ev) {
+    // In Windows, we should not allow user to unset default mail app
+    if(window.isNodeWebkit && NodeWebkitUtils.isWindows()) {
+        var checkbox = DwtControl.getTargetControl(ev);
+
+        // Check if user is unsetting default mail app
+        if(!checkbox || checkbox.isSelected()) {
+            return;
+        }
+
+        var os = require('os'),
+            osVer = os.release().split('.');
+
+        var dg = appCtxt.getMsgDialog();
+
+        dg.registerCallback(DwtDialog.OK_BUTTON, ZmPref._handleOnChangeDefaultOk, this, [dg]);
+        // Set message based on current OS
+        dg.setMessage((parseInt(osVer[0], 10) >= 10) ? ZmMsg.mailtoResetWin10 : ZmMsg.mailtoReset, DwtMessageDialog.WARNING_STYLE);
+
+        dg.popup();
+    }
+};
+
+ZmPref._handleOnChangeDefaultOk =
+function(dg) {
+    var isDefault = NodeWebkitMailto.isRegistered(),
+        pref = appCtxt.getSettings().getSetting(ZmSetting.OFFLINE_IS_MAILTO_HANDLER);
+
+    // Check if user has actually changed setting externally
+    if(pref.getValue() != isDefault) {
+        // Sync pref with system settings
+        pref.setValue(isDefault);
+        pref.origValue = pref.copyValue();
+    }
+
+    // Update checkbox in UI
+    ZmPref.setFormValue(ZmSetting.OFFLINE_IS_MAILTO_HANDLER, isDefault);
+
+    dg.popdown();
+};
+
 ZmPref.onChangeConfirm =
 function(confirmMsg, showIfCallback, useCallback, revertCallback, ev) {
 	var show = false;

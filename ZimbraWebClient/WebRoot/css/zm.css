@@ -4584,6 +4584,25 @@ If you feel compelled to have a background color, please do so on a per skin lev
 	background-color: #FFFFFF;
 }
 
+.ZmDownloadListTable {
+    min-width: 245px;
+}
+
+.ZmDownloadFileName {
+    font-size: 11px;
+    color: #000000;
+    width: 100%;
+}
+
+.ZmDownloadFileDetails {
+    font-size: 9px;
+    color: #666666;
+}
+
+.ZmDownloadImageIcon {
+    opacity: 0.5;
+}
+
 /* Version History */
 .VersionHistoryToolbar {
     @ToolbarBg@   

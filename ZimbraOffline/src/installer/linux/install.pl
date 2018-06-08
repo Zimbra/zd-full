@@ -27,7 +27,7 @@ my $messages = {
         Success => 'You have finished installing application files.',
         UserInstall => "Would you like to continue to install data files for user: {0} ?",
         UserInstallNote => "To install data files for additional users, please login as the user and run this command:",
-        Welcome => "Welcome to Zimbra Desktop setup wizard. This will install Zimbra Desktop on your computer.",
+        Welcome => "Welcome to Zimbra Desktop (32-bit) setup wizard. This will install Zimbra Desktop on your computer.",
         YesNo => "(Y)es or (N)o",
         IA32Warning => "WARNING: ia32-libs is missing for x86_64 platform. This package is required to run Zimbra Desktop on 64-bit Linux."
     }
@@ -126,12 +126,20 @@ sub dependency_check() {
 sub java_check() {
     my $javaversionhelp = `java -version 2>&1` || "";
     chomp $javaversionhelp;
-    if( $javaversionhelp =~ m/java version "(.+)"/s ){
+    if( $javaversionhelp =~ m/java version "(.+)"/s || $javaversionhelp =~ m/openjdk version "(.+)"/s){
         my $javaversion = $1;
         my $javaver= substr $javaversion, 0, 3;
         if( $javaver < 1.6 ) { print "Current Java SE Runtime Environment (JRE) version is not supported. Please update JRE to version 1.6 or later.\n"; exit; }
     }
     else { print "Java SE Runtime Environment (JRE) not found. Please install JRE 1.6 or later.\n"; exit; }
+}
+
+sub java_variant_check() {
+    my $java_variant=system("java -d32 -version >/dev/null 2>&1");
+    if ( $java_variant != 0 ){
+        print "Zimbra Desktop (32-bit) requires a 32-bit Java SE Runtime Environment (JRE), which is not installed or is outdated. Please install JRE 1.6 (32-bit) or later.\n";
+        exit;
+    }
 }
 
 sub dialog_app_root() {
@@ -160,6 +168,7 @@ dialog_welcome();
 dialog_license();
 dependency_check();
 java_check();
+java_variant_check();
 $app_root = dialog_app_root();
 
 stop_process("$app_root/linux/prism/zdclient");

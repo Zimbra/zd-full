@@ -382,6 +382,7 @@ AjxDebug.prototype._getHtmlForObject =
 function(obj, params) {
 
 	params = params || {};
+
 	var html = [];
 	var idx = 0;
 

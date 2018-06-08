@@ -98,7 +98,9 @@ ${zm:clearMessageCache(mailbox)}
 </style>
 <script type="text/javascript">
 <!--
-         setTimeout('window.print()', 1000);
+         setTimeout(function() {
+            window.print();
+         }, 1000);
 //-->
 </script>
 </body>

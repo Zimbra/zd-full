@@ -61,11 +61,104 @@ my $lockfile = "$home_dir/Library/.zdrun.lock";
 my $lockfh;
 
 my @user_files = ("index", "store", "sqlite", "log", "zimlets-properties", "zimlets-deployed", 
-	"conf/keystore", "profile/prefs.js", "profile/persdict.dat", "profile/localstore.json");
+	"conf/keystore", "conf/local_prefs.json", "profile/persdict.dat", "profile/localstore.json");
 
-sub launch_prism() {
-    system("\"$app_root/Zimbra Desktop.app/Contents/MacOS/reopen\" &");
-	exec("\"$app_root/Zimbra Desktop.app/Contents/MacOS/prism\"");
+sub isLocalConfigUpdated {
+	my $current_timestamp = $_[0];
+    my $counter = 0;
+    my $file_updated = 0;
+    {
+    do{
+		my $new_timestamp = (stat("$data_root/conf/localconfig.xml"))[9];
+		if($new_timestamp != $current_timestamp) {
+			$file_updated = 1;
+			last;
+		}
+		else {
+			sleep(2);
+		}
+		$counter = $counter + 1;
+    }while( $counter < 10 );
+    }
+    return $file_updated;
+}
+
+# This will be only used when upgrading from 7.2 to 7.3
+sub upgradePreferences() {
+    my $src_file = "$tmpdir/profile/prefs.js";
+    my $dest_folder = "$data_root/conf";
+    my $dest_file = "$dest_folder/local_prefs.json";
+    my $pref = "";
+
+    # No existing preferences found
+    if (!-e $src_file) {
+        return;
+    }
+
+    if(!-e $dest_folder) {
+        return;
+    }
+
+    # Read existing prism preference from tmp directory
+    my %attrs;
+    open(my $fh1, '<', $src_file) or die "Could not open file '$src_file' $!";
+    my $cnt =0 ;
+    while(my $row = <$fh1>) {
+        chomp $row;
+        if ($row =~ m/intl.accept_languages/ || $row =~ m/app.update.channel/) {
+            my @parts = split /[(),\s\";]+/, $row;
+            $attrs{$parts[1]} = $parts[2];
+            $cnt++;
+        }
+    }
+    close $fh1;
+
+    # If user preferences are present then write them to new system in JSON format
+    if ($cnt > 0) {
+        my $content = "{";
+        for my $attribute (keys %attrs) {
+            my $val = $attrs{$attribute};
+            if ($attribute =~ m/intl.accept_languages/) {
+                #replace - with _ in locale
+                $val =~ s/-/_/g;
+                $attribute = "LOCALE_NAME";
+            }
+            if ($attribute =~ m/app.update.channel/) {
+                $attribute = "AUTO_UPDATE_NOTIFICATION";
+            }
+            $content = $content . "\"$attribute\":\"$val\",";
+        }
+        $content = substr $content, 0, length($content) - 1;
+        $content = $content . "}";
+        open(my $fh2, '>', $dest_file) or die "Could not open file '$dest_file' $!";
+        print $fh2 $content;
+        close $fh2;
+    }
+}
+
+sub launch_node_webkit() {
+    my $current_timestamp = (stat("$data_root/conf/localconfig.xml"))[9];
+    system("\"$data_root/bin/start-zdesktop\"");
+
+    if(isLocalConfigUpdated($current_timestamp) == 0) {
+        # localconfig.xml did not get updated; stop the existing jetty proccess and start new one.
+        system("\"$data_root/bin/stop-zdesktop\"");
+        sleep(2);
+        system("\"$data_root/bin/start-zdesktop\"");
+        if(isLocalConfigUpdated($current_timestamp) == 0) {
+	        print "localconfig.xml zimbra_admin_service_port not updated by jetty !\n";
+            exit 1;
+        }
+    }
+
+    use XML::Simple;
+	my $localconfigkey = XMLin("$data_root/conf/localconfig.xml")->{key};
+	my $jettyport = $localconfigkey->{zimbra_admin_service_port}->{value};
+	my $installationkey = $localconfigkey->{zdesktop_installation_key}->{value};
+	my $URL = "http://127.0.0.1:" . $jettyport . "/desktop/login.jsp?at=" . $installationkey;
+
+	system("\"$app_root/Zimbra Desktop.app/Contents/MacOS/reopen\" &");
+	exec("\"$app_root/Zimbra Desktop.app/Contents/MacOS/nwjs\" data-path=\"$data_root\" url=$URL");
 }
 
 # ensure single running instance of this script per user
@@ -78,9 +171,9 @@ if (!flock($lockfh, 2 | 4)) { # LOCK_EX | LOCK_NB
     exit 1;
 }
 
-# not new install or upgrade - just run prism
+# not new install or upgrade - just run nwjs
 if (-e "$data_root/.$app_timestamp") {
-	launch_prism();
+	launch_node_webkit();
 }
 
 # backup user data
@@ -95,6 +188,10 @@ if (-e $data_root) {
 		my $src = "$data_root/$_";
 		system("mv -f \"$src\" \"$tmpdir/$_\"") if (-e $src);
 	}
+
+    # Copy prism preference file, we will not add it to aUserFiles as
+    # we don't want to restore the same file instead we will convert it to NWJS system
+    system("mv -f \"$data_root/profile/prefs.js\" \"$tmpdir/profile/prefs.js\"") if (-e "$data_root/profile/prefs.js");
 
 	system("rm -rf \"$data_root\"");
 }
@@ -115,18 +212,9 @@ if (is_leopard()) { # Leopard's JDK 1.6 does not support 32-bit mode. So we forc
 }
 
 # fix data files
-my $override_file = "$data_root/zdesktop.webapp/override.ini";
-my $override_dir = "$home_dir/.prism/Zimbra/Zimbra Desktop";
 find_and_replace("$data_root/conf/localconfig.xml", $tokens);
 find_and_replace("$data_root/jetty/etc/jetty.xml", $tokens);
 find_and_replace("$data_root/bin/zdesktop", $tokens);
-find_and_replace("$data_root/zdesktop.webapp/webapp.ini", $tokens);
-find_and_replace($override_file, $tokens);
-find_and_replace("$data_root/profile/user.js", $tokens);
-mkdir("$home_dir/.prism");
-mkdir("$home_dir/.prism/Zimbra");
-mkdir($override_dir);
-system("cp -f \"$override_file\" \"$override_dir\"");
 
 # install zdesktop service
 my $plist = "$home_dir/Library/LaunchAgents/com.zimbra.desktop.plist";
@@ -142,6 +230,10 @@ system("touch \"$data_root/.$app_timestamp\"");
 
 # restore user data
 if ($is_upgrade) {
+
+    # handle preferences seperately when upgrading from 7.2 (prism) to 7.3 (nwjs)
+    upgradePreferences();
+
     for (@user_files) {
         my $src = "$tmpdir/$_";
 		next if (! -e $src);
@@ -158,4 +250,4 @@ if ($is_upgrade) {
 }
 
 system("/bin/chmod 700 \"$data_root\"");
-launch_prism();
+launch_node_webkit();

@@ -1371,6 +1371,7 @@ function(parent, num) {
 		parent.enable([ZmOperation.NEW_MENU, ZmOperation.TAG_MENU, ZmOperation.DELETE, ZmOperation.MOVE, ZmOperation.FORWARD], true);
     }
 
+	parent.enable(ZmOperation.SHOW_DOWNLOADS, true);
 	// bug: 41758 - don't allow shared items to be tagged
 	var folder = (num > 0) && this._getSearchFolder();
 	if (folder && folder.isRemote()) {
@@ -2077,4 +2078,56 @@ function() {
 	var lv = this._listView[this._currentView];
 	lv._checkItemCount();
 	lv._handleResponseCheckReplenish(true);
+};
+
+//list of downloads will be passed to callback function
+ZmListController.prototype._getDownloadList = 
+function(cb) {
+    chrome.downloads.search({"orderBy":["-startTime"], "exists":true, "state":"complete"}, cb);
+};
+
+ZmListController.prototype._showDownloadsListener = 
+function(ev, callback) {
+    var _event = ev;
+    ZmListController.prototype._getDownloadList(function(list) {
+        console.log("Downloaded item count", list.length);
+        var dimensions = _event.dwtObj.getBounds();
+        if (list.length == 0) {
+            var menu = new DwtMenu({parent:appCtxt.getShell(), layout:DwtMenu.LAYOUT_STACK});
+            var mi = DwtMenuItem.create({parent:menu, text:ZmMsg.noDownloads});
+            new DwtMenuItem({parent: menu, style:DwtMenuItem.SEPARATOR_STYLE});
+            menu.popup(0, dimensions.x, dimensions.y + dimensions.height);
+            return;
+        }
+
+        if (list.length > 0) {
+            var menu = new DwtMenu({parent:appCtxt.getShell(), layout:DwtMenu.LAYOUT_SCROLL, maxRows:10});
+
+            for(var i=0 ; i < list.length; i++) {
+                var downloadItem = list[i];
+
+                console.log("DownloadItem:", downloadItem);
+                var path = require('path');
+                var fileName = path.basename(downloadItem.filename);
+                var time = AjxDateUtil.computeWordyDateStr(new Date(), (new Date(downloadItem.endTime)).getTime());
+                var size = AjxUtil.formatSize(downloadItem.bytesReceived);
+                var img = 'Img' + ZmMimeTable.getInfo(downloadItem.mime).imageMedium;
+                var data = ZmListView.prototype._getDownloadListItemCell(fileName, size, time, img);
+
+                var mi = DwtMenuItem.create({parent:menu, text:data});
+                mi.setData("menuItemId", downloadItem.id);
+
+                mi.addSelectionListener(ZmListController.prototype._downloadItemMenuListener);
+                new DwtMenuItem({parent: menu, style:DwtMenuItem.SEPARATOR_STYLE});
+            }
+            menu.popup(0, dimensions.x, dimensions.y + dimensions.height);
+        }
+    });
+};
+
+ZmListController.prototype._downloadItemMenuListener = 
+function(ev) {  
+    console.log("item is clicked", ev);
+    var downloadId = ev.item.getData("menuItemId");
+    chrome.downloads.open(downloadId);
 };

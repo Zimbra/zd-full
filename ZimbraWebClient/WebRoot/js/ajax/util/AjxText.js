@@ -369,6 +369,7 @@ AjxDateFormat = function(pattern) {
 			case AjxDateFormat.MEDIUM: pattern = I18nMsg.formatDateMedium; break;
 			case AjxDateFormat.LONG: pattern = I18nMsg.formatDateLong; break;
 			case AjxDateFormat.FULL: pattern = I18nMsg.formatDateFull; break;
+			case AjxDateFormat.SEARCH: pattern = I18nMsg.formatDateSearch; break;
 		}
 	}	
 	for (var i = 0; i < pattern.length; i++) {
@@ -471,7 +472,7 @@ AjxDateFormat.LONG = 2;
 AjxDateFormat.FULL = 3;
 /** Default date/time format style. */
 AjxDateFormat.DEFAULT = AjxDateFormat.MEDIUM;
-
+AjxDateFormat.SEARCH = 4;
 AjxDateFormat._META_CHARS = "GyMwWDdFEaHkKhmsSzZ";
 
 // Static methods
@@ -569,7 +570,7 @@ AjxDateFormat.initialize = function() {
 	// format
 	AjxDateFormat._dateFormats = [
 		I18nMsg.formatDateShort, I18nMsg.formatDateMedium,
-		I18nMsg.formatDateLong, I18nMsg.formatDateFull
+		I18nMsg.formatDateLong, I18nMsg.formatDateFull, I18nMsg.formatDateSearch
 	];
 	AjxDateFormat._timeFormats = [
 		I18nMsg.formatTimeShort, I18nMsg.formatTimeMedium,

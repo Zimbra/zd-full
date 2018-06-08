@@ -1408,7 +1408,7 @@ ZmApptEditView.prototype.isSuggestionsNeeded =
 function() {
     if (appCtxt.isOffline) {
         var ac = window["appCtxt"].getAppController();
-        return !this._isForward && this.GROUP_CALENDAR_ENABLED && ac._isPrismOnline && ac._isUserOnline;
+        return !this._isForward && this.GROUP_CALENDAR_ENABLED && ac._isNodeWebkitOnline && ac._isUserOnline;
     } else {
         return !this._isForward && this.GROUP_CALENDAR_ENABLED;
     }

@@ -394,27 +394,8 @@ function(id, value, setup, control) {
 
 		if (type == ZmPref.TYPE_COLOR) {
 			object.setColor(value);
-		} else if (type == ZmPref.TYPE_CHECKBOX) {
-			if (id == ZmSetting.OFFLINE_IS_MAILTO_HANDLER) {
-				try { // add try/catch - see bug #33870
-					if (window.platform && !window.platform.isRegisteredProtocolHandler("mailto")) {
-						object.setSelected(false);
-
-						// this pref might have been set to true before. so we must set origValue = false
-						// so that when user selects the checkbox, it will be considered "dirty"
-						var setting = appCtxt.getSettings(appCtxt.accountList.mainAccount).getSetting(id);
-						setting.origValue = false;
-					} else {
-						object.setSelected(true);
-					}
-					object.setEnabled(true);
-				} catch(ex) {
-					object.setEnabled(false);
-					object.setSelected(false);
-				}
-			} else {
-				object.setSelected(value);
-			}
+		} else if (type == ZmPref.TYPE_CHECKBOX) { 
+			object.setSelected(value);
 		} else if (type == ZmPref.TYPE_RADIO_GROUP) {
 			object.setSelectedValue(value);
 		} else if (type == ZmPref.TYPE_COMBOBOX) {
@@ -521,6 +502,20 @@ function(templateId, data) {
 ZmPreferencesPage.prototype._getPrefValue =
 function(id, useDefault) {
 	var pref = appCtxt.getSettings().getSetting(id);
+
+    // This setting can be changed externally so every reset should check if it is changed
+    if(window.isNodeWebkit && appCtxt.isOffline) {
+        if(id == ZmSetting.OFFLINE_IS_MAILTO_HANDLER) {
+            var isDefault = NodeWebkitMailto.isRegistered();
+
+            if(pref.getValue() != isDefault) {
+                // Update existing preference
+                pref.setValue(isDefault);
+                pref.origValue = pref.copyValue();
+            }
+        }
+    }
+
 	return useDefault ? pref.getDefaultValue() : pref.getValue();
 };
 
@@ -1104,7 +1099,7 @@ function(dialog, format, subFormat, folder) {
 		var portPrefix = (location.port == "" || location.port == "80")
 			? ""
 			: (":" + location.port);
-		var folderName = folder._systemName || AjxStringUtil.urlEncode(folder.getPath());
+		var folderName = folder._systemName || AjxStringUtil.urlEncode(folder.getPath()).replace(/'/g, "%27");
 		var username = appCtxt.multiAccounts ? (AjxStringUtil.urlComponentEncode(appCtxt.get(ZmSetting.USERNAME))) : "~";
 		var uri = [
 			location.protocol, "//", location.hostname, portPrefix, "/service/home/",

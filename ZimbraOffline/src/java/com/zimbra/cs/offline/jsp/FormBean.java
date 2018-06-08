@@ -5,13 +5,10 @@ package com.zimbra.cs.offline.jsp;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,13 +26,13 @@ public abstract class FormBean extends PageBean {
     private String stackTrace;
 
     private Set<String> invalids = new HashSet<String>();
-    
+
     private SSLCertInfo sslCertInfo;
-    
+
     protected String sslCertAlias;
-    
+
     public FormBean() {}
-    
+
     public void setVerb(String strVerb) {
         verb = strVerb != null ? JspVerb.fromString(strVerb) : null;
     }
@@ -175,9 +172,12 @@ public abstract class FormBean extends PageBean {
         if (isEmpty(input))
             return false;
 
-        if (input.indexOf('/') > 0) {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        if (isValidDateFormatSeperator(input)) {
+            String dateFormat = this.getMessage("DateParseFormat");
+
+            SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
             Date testDate = null;
+
             try {
               testDate = sdf.parse(input);
             } catch (ParseException e) {
@@ -186,10 +186,15 @@ public abstract class FormBean extends PageBean {
             if (!sdf.format(testDate).equals(input)) {
               return false;
             }
-        } else {
-                return false;
+         } else {
+              return false;
             }
-        return true;
+         return true;
+    }
+
+    private boolean isValidDateFormatSeperator(String input) {
+        //Date format may have "/" or "-" or "."
+        return input.indexOf('/') > 0 || input.indexOf('-') > 0 || input.indexOf('.') > 0;
     }
 
     protected boolean isValidSyncRelativeDate(String input) {

@@ -300,9 +300,9 @@ ZmSettings.prototype.setUserSettings = function(params) {
 		// NOTE: only the main account can have children
 		appCtxt.accountList.createAccounts(this, info);
 
-		// for offline, find out whether this client supports prism-specific features
+        // ZD_Next: isWebkit will be true if launched in Node-webkit chromium shell
 		if (appCtxt.isOffline) {
-			if (AjxEnv.isPrism && window.platform) {
+			if (window.isNodeWebkit) {
 				var setting = this._settings[ZmSetting.OFFLINE_SUPPORTS_MAILTO];
 				if (setting) {
 					setting.setValue(true, null, setDefault, skipNotify, skipImplicit);
@@ -316,6 +316,21 @@ ZmSettings.prototype.setUserSettings = function(params) {
 			// bug #45804 - sharing always enabled for offline
 			appCtxt.set(ZmSetting.SHARING_ENABLED, true, null, setDefault, skipNotify);
 		}
+	}
+
+	if (appCtxt.isOffline && window.isNodeWebkit) {
+		// for node webkit, we need to get language code from local pref, instead of getting from zimbra server
+		// to make sure it is available in offline mode also
+		var localeId = NodeWebkitPrefs.getPreference('LOCALE_NAME');
+
+		if(localeId) {
+            NodeWebkitUtils.updateSpellCheck(localeId);
+			appCtxt.set(ZmSetting.LOCALE_NAME, localeId, null, setDefault, skipNotify);
+		}
+
+        // for node webkit, check ZD is set as default mail app
+        var isDefault = NodeWebkitMailto.isRegistered();
+        appCtxt.set(ZmSetting.OFFLINE_IS_MAILTO_HANDLER, isDefault, null, setDefault, skipNotify);
 	}
 
 	// handle settings whose values may depend on other settings
@@ -1018,23 +1033,20 @@ function(ev) {
 		cd.setMessage(ZmMsg.skinChangeRestart, DwtMessageDialog.WARNING_STYLE);
 		cd.popup();
 	} else if (id == ZmSetting.LOCALE_NAME) {
-		// bug: 29786
-		if (appCtxt.isOffline && AjxEnv.isPrism) {
-			try {
-				netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
-				var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-				if (prefs) {
-					var newLocale = appCtxt.get(ZmSetting.LOCALE_NAME).replace("_", "-");
-					prefs.setCharPref("general.useragent.locale", newLocale);
-					prefs.setCharPref("intl.accept_languages", newLocale);
-				}
-			} catch (ex) {
-				// do nothing for now
+		// When changing language preference make sure to write it in file system, because we don't want to store it in zimbra server
+		if(appCtxt.isOffline && window.isNodeWebkit) {
+			var localeId = appCtxt.get(ZmSetting.LOCALE_NAME);
+
+			if(localeId) {
+				NodeWebkitPrefs.addPreference('LOCALE_NAME', localeId);
+				NodeWebkitUtils.updateSpellCheck(localeId);
+				//Update Zd message as per locale
+				NodeWebkitI18n.loadZdMessages();
 			}
 		}
+
 		var cd = appCtxt.getYesNoMsgDialog();
 		cd.reset();
-		var skin = ev.source.getValue();
 		cd.registerCallback(DwtDialog.YES_BUTTON, this._refreshBrowserCallback, this, [cd]);
 		cd.setMessage(ZmMsg.localeChangeRestart, DwtMessageDialog.WARNING_STYLE);
 		cd.popup();
@@ -1045,9 +1057,18 @@ function(ev) {
 		cd.setMessage(ZmMsg.accountChangeRestart, DwtMessageDialog.WARNING_STYLE);
 		cd.popup();
 	} else if (appCtxt.isOffline && id == ZmSetting.OFFLINE_IS_MAILTO_HANDLER) {
-		appCtxt.getAppController().registerMailtoHandler(true, ev.source.getValue());
+        if(window.isNodeWebkit) {
+            NodeWebkitMailto.updateRegistry(!ev.source.getValue());
+        }
 	} else if (appCtxt.isOffline && id == ZmSetting.OFFLINE_UPDATE_NOTIFY) {
-		appCtxt.getAppController()._offlineUpdateChannelPref(ev.source.getValue());
+	    var notifySetting = ev.source.getValue();
+        NodeWebkitPrefs.addPreference('AUTO_UPDATE_NOTIFICATION', notifySetting);
+
+		if (notifySetting === "doNotNotify") {
+		    NodeWebkitAutoUpdate.cancelAutoUpdateTimer();
+		} else {
+		    NodeWebkitAutoUpdate.scheduleAutoUpdate();
+		}
 	} else if (id == ZmSetting.PASSWORD_LOCK_ENABLED) {
 		var el = Dwt.byId(ZmId.PASSSWORD_LOCK);
 		if (el) {
@@ -1059,7 +1080,6 @@ function(ev) {
 			}
 		}
 	}
-
 };
 
 ZmSettings.prototype._implicitChangeListener =
@@ -1097,7 +1117,12 @@ ZmSettings.prototype._refreshBrowserCallback =
 function(dialog) {
 	dialog.popdown();
 	window.onbeforeunload = null;
-	var url = AjxUtil.formatUrl({});
+	var url = AjxUtil.formatUrl({
+        // if language is changed then make sure localeId is updated in url
+        qsArgs: {
+            'localeId' : appCtxt.get(ZmSetting.LOCALE_NAME)
+        }
+    });
 	window.location.replace(url);
 };
 

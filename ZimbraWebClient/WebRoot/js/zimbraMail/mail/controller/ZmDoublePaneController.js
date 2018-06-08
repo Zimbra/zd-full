@@ -221,6 +221,9 @@ function() {
 		list.push(ZmOperation.SEP, ZmOperation.DETACH);
 	}
 
+    list.push(ZmOperation.SEP,
+            ZmOperation.SHOW_DOWNLOADS,
+            ZmOperation.SEP);
     list.push(ZmOperation.SEP,ZmOperation.VIEW_MENU);
 	return list;
 };

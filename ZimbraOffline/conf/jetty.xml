@@ -212,5 +212,9 @@
     <Set name="stopAtShutdown">true</Set>
     <Set name="sendServerVersion">false</Set>
     <Set name="sendDateHeader">true</Set>
-    <Set name="gracefulShutdown">2000</Set>
+    <!-- 
+        This property adds additional delay in shutdown process.(bug #107007)
+        It is safe to comment out this line. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=420142#c2
+        <Set name="gracefulShutdown">2000</Set> 
+    -->
 </Configure>

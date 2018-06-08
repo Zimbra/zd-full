@@ -12,7 +12,7 @@
 <jsp:setProperty name="bean" property="locale" value="${pageContext.request.locale}"/>
 <jsp:useBean id="eventBean" class="com.zimbra.cs.offline.jsp.ClientEventBean"/>
 
-<zd:auth/>
+<zd:auth localeId="${param.localeId}"/>
 
 ${zdf:onLogin(eventBean)}
 

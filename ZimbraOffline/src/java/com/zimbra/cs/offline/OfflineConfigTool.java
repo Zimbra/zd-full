@@ -13,7 +13,7 @@ public class OfflineConfigTool {
 
 	public static void setPort(String dataRoot, int port) {
 		setPortInLocalConfig(dataRoot, port);
-		setPortInWebAppIni(dataRoot, port);
+		//setPortInWebAppIni(dataRoot, port);
     }
     
 	private static void setPortInLocalConfig(String dataRoot, int port) {

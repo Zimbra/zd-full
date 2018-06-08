@@ -49,6 +49,10 @@
   <key name="javamail_smtp_debug">
     <value>false</value>
   </key>
+  <key name="zdesktop_ui_debug_level">
+    <!-- 0 = debugging disabled, 1 = minimal logging, 2 = moderate logging, 3 = anything goes -->
+    <value>0</value>
+  </key>
   <key name="javamail_zsmtp">
     <value>false</value>
   </key>
@@ -247,5 +251,8 @@
   </key>
   <key name="zdesktop_auto_archive_on_startup_time">
     <value>30</value>
+  </key>
+  <key name="zdesktop_quit_on_close">
+    <value>true</value>
   </key>
 </localconfig>

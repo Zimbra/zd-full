@@ -96,7 +96,7 @@ function() {
         query = [this._select.getValue(),":",d.getTime()].join("");
       }
       else{
-        var formatter = AjxDateFormat.getDateInstance(AjxDateFormat.SHORT);
+        var formatter = AjxDateFormat.getDateInstance(AjxDateFormat.SEARCH);
         var date = formatter.format(d);
         query = [this._select.getValue(),':"',date,'"'].join("");
       }

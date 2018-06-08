@@ -1,0 +1,33 @@
+{
+  "main": "home.html",
+  "name": "zimbra-desktop",
+  "description": "zimbra desktop built using nwjs framework",
+  "version": "@version@",
+  "chromium-args": "--enable-spell-checking --disable-print-preview",
+  "inject_js_start": "js/NodeWebkitInitStart.js",
+  "inject_js_end": "js/NodeWebkitInitEnd.js",
+  "bg-script": "js/NodeWebkitBackground.js",
+  "permissions": ["downloads", "downloads.open"],
+  "window": {
+    "show": false,
+    "width": 850,
+    "height": 650,
+    "title": "Zimbra Desktop",
+    "icon": "img/launcher_32x32.png",
+    "resizable": true,
+    "show_in_taskbar": true
+  },
+  "webkit": {
+    "plugin": true
+  },
+  "dependencies": {
+    "mime-types": "^2.1.13",
+    "request": "^2.75.0"
+  },
+  "node-remote": "http://127.0.0.1",
+  "build-id": "@buildVersion@",
+  "channel": "@channel@",
+  "platform": "@platform@",
+  "autoUpdateHost": "@updateHost@",
+  "autoUpdatePath": "@updatePath@"
+}

@@ -7,6 +7,6 @@
 
 sleep 2;
 
-my $cmd='osascript -e "tell application \"Zimbra Desktop\" to reopen";
+my $cmd='osascript -e "tell application \"Zimbra Desktop\" to reopen"';
 
 system("$cmd");

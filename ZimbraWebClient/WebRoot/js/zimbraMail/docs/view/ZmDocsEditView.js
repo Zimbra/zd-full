@@ -637,7 +637,7 @@ ZmDocsEditView.prototype._createToolbar = function(toolbar) {
     b.setContent([
         "<div style='white-space: nowrap; padding-right:10px;'>",
             "<input type='checkbox' name='enableDesc' id='enableDesc' value='enableVersions'>",
-            "&nbsp; Enable Version Notes",
+            "&nbsp; " + ZmMsg.enableVersionNotes,
         "</div>"
     ].join(''));
 

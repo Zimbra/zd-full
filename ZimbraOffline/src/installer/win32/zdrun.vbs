@@ -5,7 +5,7 @@
 ' ZD runner
 '
 
-Dim oFso, oReg, oShellApp, oShell, oWMI, sScriptPath, sScriptDir, oTokens, sAppRoot, sDataRoot, sOverridePath
+Dim oFso, oReg, oShellApp, oShell, oWMI, sScriptPath, sScriptDir, oTokens, sAppRoot, sDataRoot
 Dim sLocalAppDir, bIsUpgrade, sTmpDir, sRestoreDir, aUserDirs, aUserFiles, sVersion, sVerFile
 
 const HKEY_CURRENT_USER = &H80000001
@@ -22,10 +22,10 @@ End Sub
 
 Sub FindAndReplace(sFile, oTokens)
     Dim oFso, oInFile, oOutFile, sTmpFile
-    
+
     Set oFso = CreateObject("Scripting.FileSystemObject")
     sTmpFile = sFile & ".tmp"
-    
+
     On Error Resume Next
     Set oInFile = oFso.OpenTextFile(sFile, 1, false)
     If Err.number <> 0 Then
@@ -60,19 +60,35 @@ End Function
 
 Sub CopyIfExists(sSrc, sDest, bOW)
     If oFso.FileExists(sSrc) Then
+		If oFso.FileExists(sDest) Then
+			oFso.CopyFile sSrc, sDest, bOW
+		End If
+    End If
+End Sub
+
+Sub CopyIfSourceExists(sSrc, sDest, bOW)
+    If oFso.FileExists(sSrc) Then
         oFso.CopyFile sSrc, sDest, bOW
     End If
 End Sub
 
-Sub LaunchPrism()
-    Dim sCmd, iRet 
+Sub LaunchNodeWebkit()
+    Dim sCmd
 
-    iRet = oReg.CreateKey(HKEY_CURRENT_USER, "Software\Zimbra\Zimbra Desktop\Prism")
-    oReg.SetStringValue HKEY_CURRENT_USER, "Software\Zimbra\Zimbra Desktop\Prism", "OverridePath", sOverridePath
-
-    sCmd = Chr(34) & sAppRoot & "\win32\prism\zdclient.exe" & Chr(34)
-    oShell.Run sCmd, 1, false 
+    sCmd = Chr(34) & sAppRoot & "\win32\node-webkit\zdclient.exe" & Chr(34)
+    sCmd = sCmd & " data-path=" & Chr(34) & sDataRoot & Chr(34)
+    oShell.Run sCmd, 1, false
     WScript.Quit
+End Sub
+
+Sub StartProcesses()
+    Dim sCmd, sCScript, sZdCtl
+
+    sCScript = Chr(34) & oFso.GetSpecialFolder(1).Path & "\cscript.exe" & Chr(34)
+    sZdCtl = Chr(34) & sDataRoot & "\bin\zdctl.vbs" & Chr(34)
+
+    '* Start backend service
+    oShell.Run sCScript & " " & sZdCtl & " start", 0, true
 End Sub
 
 Sub StopProcesses()
@@ -91,6 +107,82 @@ Sub BackupFailed(sMsg)
     End If
     oFso.MoveFolder sTmpDir, sRestoreDir
     WScript.Quit
+End Sub
+
+Sub UpgradePreferences()
+    Dim sSrcFile, oSrcFile, sTextLine, sDestFolder, sDestFile, oDestFile, sPref
+    Dim re, sMatch, cMatches, sContents, sKey, attrs
+    sPref = ""
+    Set attrs = CreateObject("Scripting.Dictionary")
+
+    sSrcFile = sTmpDir & "\profile\prefs.js"
+    sDestFolder = sDataRoot & "\conf"
+    sDestFile = sDestFolder & "\local_prefs.json"
+
+    ' No existing preferences found
+    If Not oFso.FileExists(sSrcFile) Then
+        Exit Sub
+    End If
+
+    if Not oFso.FolderExists(sDestFolder) Then
+        Exit Sub
+    End If
+
+    ' Read existing prism preference from tmp directory
+    Set oSrcFile = oFso.OpenTextFile(sSrcFile, 1)
+
+    Set re = New RegExp
+    re.Pattern = """(\S*)"", ""(\S*)"""
+    re.Global = True
+
+    Do While oSrcFile.AtEndOfStream <> True
+        sTextLine = oSrcFile.ReadLine
+
+        If (Instr(1, sTextLine, "intl.accept_languages", 0)) > 0 Then
+            Set cMatches = re.Execute(sTextLine)
+            If (cMatches.Count > 0) Then
+                Set sMatch = cMatches(0)
+                ' Get value of the capturing group from matching string
+                If sMatch.SubMatches.Count > 0 Then
+                    attrs.Add "LOCALE_NAME", Replace(sMatch.SubMatches(1), "-", "_")
+                End If
+            End If
+        End If
+
+        If (Instr(1, sTextLine, "app.update.channel", 0)) > 0 Then
+            Set cMatches = re.Execute(sTextLine)
+            If (cMatches.Count > 0) Then
+                Set sMatch = cMatches(0)
+                ' Get value of the capturing group from matching string
+                If sMatch.SubMatches.Count > 0 Then
+                    attrs.Add "AUTO_UPDATE_NOTIFICATION", sMatch.SubMatches(1)
+                End If
+            End If
+        End If
+    Loop
+
+    oSrcFile.Close
+
+    ' If user preference is present then move to new system
+    If attrs.Count > 0 then
+        Dim cnt
+        sContents = "{"
+        cnt = 1
+        For Each sKey In attrs.Keys
+            sContents = sContents & """" & sKey & """:" & """" & attrs.Item(sKey) & """"
+            If cnt <> attrs.Count Then
+                sContents = sContents & ","
+            End If
+            cnt = cnt + 1
+        NEXT
+        sContents = sContents & "}"
+        
+        If sContents <> "" Then
+            Set oDestFile = oFso.CreateTextFile(sDestFile)
+            oDestFile.Write sContents
+            oDestFile.Close
+        End If
+    End If
 End Sub
 
 Sub BackupData()
@@ -122,6 +214,10 @@ Sub BackupData()
         CopyIfExists sDataRoot & "\" & sFile, sTmpDir & "\" & sFile, true 
     Next
 
+    ' Copy prism preference file, we will not add it to aUserFiles as
+    ' we don't want to restore the same file instead we will convert it to NWJS system
+    CopyIfSourceExists sDataRoot & "\profile\prefs.js", sTmpDir & "\profile\prefs.js", true
+
     Dim iButton, sMsg
     Do  
         oFso.DeleteFolder sDataRoot, true
@@ -141,6 +237,10 @@ End Sub
 
 Sub RestoreData(sSrcRoot)
     Dim sDir
+
+    ' Handle preferences seperately when upgrading from 7.2 (prism) to 7.3 (nwjs)
+    UpgradePreferences
+
     For Each sDir In aUserDirs
         If oFso.FolderExists(sSrcRoot & "\" & sDir) Then
             If oFso.FolderExists(sDataRoot & "\" & sDir) Then 
@@ -243,7 +343,7 @@ EnsureSingleInstance
 
 sVersion="@version@"
 aUserDirs = Array("index", "store", "sqlite", "log", "zimlets-properties", "zimlets-deployed")
-aUserFiles = Array("conf\keystore", "profile\prefs.js", "profile\persdict.dat", "profile\localstore.json")
+aUserFiles = Array("conf\keystore", "conf\local_prefs.json", "profile\persdict.dat", "profile\localstore.json")
 sScriptPath = WScript.ScriptFullName
 sScriptDir = Left(sScriptPath, InStrRev(sScriptPath, WScript.ScriptName) - 2)
 sAppRoot = oFso.GetParentFolderName(sScriptDir)
@@ -254,7 +354,6 @@ xmlDataRoot = Replace(sDataRoot,"&","&amp;")
 sVerFile = sDataRoot & "\conf\version"
 sTmpDir = sDataRoot & ".tmp"
 sRestoreDir = sDataRoot & ".rst"
-sOverridePath = sDataRoot & "\zdesktop.webapp\override.ini"
 bIsUpgrade = false
 
 If oFso.FolderExists(sDataRoot) Then
@@ -265,7 +364,7 @@ If oFso.FolderExists(sDataRoot) Then
     Dim sCurVer
     sCurVer = ReadVersion
     If StrComp(sCurVer, sVersion) = 0 Then
-        LaunchPrism
+        LaunchNodeWebkit
     Else
         bIsUpgrade = true
     End If
@@ -320,9 +419,6 @@ oTokens.Add "@java.xmx@", javaXmx
 
 FindAndReplace sDataRoot & "\bin\zdctl.vbs", oTokens
 FindAndReplace sDataRoot & "\conf\zdesktop.conf", oTokens
-FindAndReplace sDataRoot & "\zdesktop.webapp\webapp.ini", oTokens
-FindAndReplace sDataRoot & "\profile\user.js", oTokens
-FindAndReplace sOverridePath, oTokens
 
 oTokens.Remove "@install.data.root@"
 oTokens.Add "@install.data.root@", xmlDataRoot
@@ -336,4 +432,4 @@ End If
 oReg.CreateKey HKEY_CURRENT_USER, "Software\Zimbra\Zimbra Desktop"
 oReg.SetStringValue HKEY_CURRENT_USER, "Software\Zimbra\Zimbra Desktop", "DataRoot", sDataRoot
 
-LaunchPrism
+LaunchNodeWebkit

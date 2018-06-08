@@ -29,13 +29,13 @@
     <Property Id="JAVA_CURRENT_VERSION">
     <RegistrySearch Id="JRE_CURRENT_VERSION_REGSEARCH" Root="HKLM" Key="SOFTWARE\JavaSoft\Java Runtime Environment" Name="CurrentVersion" Type="raw" Win64="no" />
     </Property>
-    <Condition Message="Zimbra Desktop (32-bit) requires a 32-bit Java SE Runtime Environment (JRE), which is not installed or is outdated. Please install JRE 1.6 (32-bit) or later."><![CDATA[Installed OR (JAVA_CURRENT_VERSION >= "1.6")]]></Condition>
+    <Condition Message="Zimbra Desktop (32-bit) requires Oracle Java Runtime Environment 1.6 (32-bit) or later."><![CDATA[Installed OR (JAVA_CURRENT_VERSION >= "1.6")]]></Condition>
 
     <InstallExecuteSequence>
       <Custom Action="ID10617" After="FindRelatedProducts">NEWER_VERSION_FOUND</Custom>
-      <LaunchConditions Sequence="100">NOT Installed</LaunchConditions>
-      <FindRelatedProducts Sequence="200" />
-      <AppSearch Sequence="300" />
+      <FindRelatedProducts Sequence="100" />
+      <AppSearch Sequence="200" />
+      <LaunchConditions Sequence="300">NOT Installed</LaunchConditions>
       <CCPSearch Sequence="400">NOT Installed</CCPSearch>
       <RMCCPSearch Sequence="600">NOT Installed AND CPP_TEST</RMCCPSearch>
       <ValidateProductID Sequence="700" />
@@ -165,68 +165,118 @@
 
         </Directory>  <!--  InstallOrganizationFolder -->
 
-        <!-- Registry entries for ZimbraMAPI extension -->
+        <!-- Registry entries for mailto/sendto functionality -->
         <Component Id="ID10629" Guid="b76b6050-8869-497b-8d69-5f43fc37715b">
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop">
+
+          <!-- Remove registry entries which was created by prism based ZD and we don't require it anymore -->
+          <RemoveRegistryKey Root="HKCU" Key="SOFTWARE\Clients\Mail\Zimbra Desktop" Action="removeOnInstall"></RemoveRegistryKey>
+          <RemoveRegistryKey Root="HKCU" Key="SOFTWARE\Classes\ZimbraDesktop.Url.mailto" Action="removeOnInstall"></RemoveRegistryKey>
+          <RemoveRegistryKey Root="HKCU" Key="SOFTWARE\Classes\ZimbraDesktopEML" Action="removeOnInstall"></RemoveRegistryKey>
+          <RemoveRegistryKey Root="HKCU" Key="SOFTWARE\Classes\.eml" Action="removeOnInstall"></RemoveRegistryKey>
+          <RemoveRegistryKey Root="HKCU" Key="SOFTWARE\Classes\mailto" Action="removeOnInstall"></RemoveRegistryKey>
+          <RemoveRegistryKey Root="HKCR" Key="ZimbraDesktop.Url.mailto" Action="removeOnInstall"></RemoveRegistryKey>
+          <RemoveRegistryKey Root="HKCR" Key="ZimbraDesktopEML" Action="removeOnInstall"></RemoveRegistryKey>
+
+          <!-- Register mailto/sendto urls for Zimbra Desktop -->
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop">
             <RegistryValue Value="Zimbra Desktop" Type="string" />
-            <RegistryValue Name="DLLPath" Value="[APPLICATIONFOLDER]win32\prism\extensions\mapi@zimbra.com\zimMapi32.dll" Type="string" />
+            <RegistryValue Name="DLLPath" Value="[APPLICATIONFOLDER]win32\node-webkit\extensions\zimbramapi\ZimbraMapi.dll" Type="string" />
           </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities">
-            <RegistryValue Name="ApplicationDescription" Value="" Type="string" />
-            <RegistryValue Name="ApplicationIcon" Value="[APPLICATIONFOLDER]win32\prism\extensions\mapi@zimbra.com\zimbra.ico,0" Type="string" />
-            <RegistryValue Name="ApplicationName" Value="ZimbraDesktop" Type="string" />
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\DefaultIcon">
+            <RegistryValue Value="[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe,0" Type="string" />
           </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities\FileAssociations">
-            <RegistryValue Name=".eml" Value="ZimbraDesktopEML" Type="string" />
-            <RegistryValue Name=".wdseml" Value="ZimbraDesktopEML" Type="string" />
-          </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities\StartMenu">
-            <RegistryValue Name="Mail" Value="Zimbra Desktop" Type="string" />
-          </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities\URLAssociations">
-            <RegistryValue Name="mailto" Value="ZimbraDesktop.Url.mailto" Type="string" />
-          </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\DefaultIcon">
-            <RegistryValue Value="[APPLICATIONFOLDER]win32\prism\extensions\mapi@zimbra.com\zimbra.ico,0" Type="string" />
-          </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\InstallInfo">
-            <RegistryValue Name="HideIconsCommand" Value="&quot;[APPLICATIONFOLDER]win32\prism\extensions\mapi@zimbra.com\helper.exe&quot; /HideShortcuts" Type="string" />
-            <RegistryValue Name="ShowIconsCommand" Value="&quot;[APPLICATIONFOLDER]win32\prism\extensions\mapi@zimbra.com\helper.exe&quot; /ShowShortcuts" Type="string" />
-            <RegistryValue Name="ReinstallCommand" Value="&quot;[APPLICATIONFOLDER]win32\prism\extensions\mapi@zimbra.com\helper.exe&quot; /SetAsDefaultAppGlobal" Type="string" />
-            <RegistryValue Name="IconsVisible" Value="0" Type="integer" />
-          </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols" />
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto">
-            <RegistryValue Value="ZimbraDesktop URL" Type="string" />
-            <RegistryValue Name="FriendlyTypeName" Value="ZimbraDesktop URL" Type="string" />
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto">
+            <RegistryValue Value="Zimbra Desktop URL" Type="string" />
+            <RegistryValue Name="FriendlyTypeName" Value="Zimbra Desktop URL" Type="string" />
             <RegistryValue Name="URL Protocol" Value="" Type="string" />
             <RegistryValue Name="EditFlags" Value="2" Type="integer" />
           </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\DefaultIcon">
-            <RegistryValue Value="[APPLICATIONFOLDER]win32\prism\extensions\mapi@zimbra.com\zimbra.ico,0" Type="string" />
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\DefaultIcon">
+            <RegistryValue Value="[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe,0" Type="string" />
           </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\shell" />
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\shell\open" />
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\shell\open\command">
-            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win32\prism\zdclient.exe&quot; -url &quot;%1&quot;" Type="string" />
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\shell\open\command">
+            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe&quot; &quot;%1&quot;" Type="string" />
           </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell" />
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\open" />
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\open\command">
-            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win32\prism\zdclient.exe&quot;" Type="string" />
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\open\command">
+            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe&quot;" Type="string" />
           </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\properties">
-            <RegistryValue Value="" Type="string" />
+
+          <!-- Capabilities associations -->
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities">
+            <RegistryValue Name="ApplicationDescription" Value="Zimbra Desktop" Type="string" />
+            <RegistryValue Name="ApplicationCompany" Value="Synacor Inc" Type="string" />
+            <RegistryValue Name="ApplicationIcon" Value="[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe,0" Type="string" />
+            <RegistryValue Name="ApplicationName" Value="Zimbra Desktop" Type="string" />
           </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\properties\command">
-            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win32\prism\zdclient.exe&quot; -options" Type="string" />
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities\FileAssociations">
+            <RegistryValue Name=".eml" Value="ZimbraDesktopEML" Type="string" />
+            <RegistryValue Name=".wdseml" Value="ZimbraDesktopEML" Type="string" />
           </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\safemode">
-            <RegistryValue Value="" Type="string" />
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities\StartMenu">
+            <RegistryValue Name="Mail" Value="Zimbra Desktop" Type="string" />
           </RegistryKey>
-          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\safemode\command">
-            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win32\prism\zdclient.exe&quot; -safe-mode" Type="string" />
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities\URLAssociations">
+            <RegistryValue Name="mailto" Value="ZimbraDesktop.Url.mailto" Type="string" />
           </RegistryKey>
+
+          <!-- Capabilities association for mailto urls -->
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\ZimbraDesktop.Url.mailto">
+            <RegistryValue Value="Zimbra Desktop URL" Type="string" />
+            <RegistryValue Name="FriendlyTypeName" Value="Zimbra Desktop URL" Type="string" />
+            <RegistryValue Name="EditFlags" Value="2" Type="integer" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\ZimbraDesktop.Url.mailto\Application">
+            <RegistryValue Name="ApplicationDescription" Value="Zimbra Desktop" Type="string" />
+            <RegistryValue Name="ApplicationCompany" Value="Synacor Inc" Type="string" />
+            <RegistryValue Name="ApplicationIcon" Value="[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe,0" Type="string" />
+            <RegistryValue Name="ApplicationName" Value="Zimbra Desktop" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\ZimbraDesktop.Url.mailto\DefaultIcon">
+            <RegistryValue Value="[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe,0" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\ZimbraDesktop.Url.mailto\shell\open\command">
+            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe&quot; &quot;%1&quot;" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\mailto">
+            <RegistryValue Value="Zimbra Desktop URL" Type="string" />
+            <RegistryValue Name="FriendlyTypeName" Value="Zimbra Desktop URL" Type="string" />
+            <RegistryValue Name="EditFlags" Value="2" Type="integer" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\mailto\DefaultIcon">
+            <RegistryValue Value="[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe,0" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\mailto\shell\open\command">
+            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe&quot;" Type="string" />
+          </RegistryKey>
+
+          <!-- Capabilities association for EML files -->
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\ZimbraDesktopEML">
+            <RegistryValue Value="Zimbra Desktop Document" Type="string" />
+            <RegistryValue Name="FriendlyTypeName" Value="Zimbra Desktop Document" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\ZimbraDesktopEML\Application">
+            <RegistryValue Name="ApplicationDescription" Value="Zimbra Desktop" Type="string" />
+            <RegistryValue Name="ApplicationCompany" Value="Synacor Inc" Type="string" />
+            <RegistryValue Name="ApplicationIcon" Value="[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe,0" Type="string" />
+            <RegistryValue Name="ApplicationName" Value="Zimbra Desktop" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\ZimbraDesktopEML\DefaultIcon">
+            <RegistryValue Value="[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe,0" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Classes\ZimbraDesktopEML\shell\open\command">
+            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win32\node-webkit\zdclient.exe&quot;" Type="string" />
+          </RegistryKey>
+
+          <!-- Register as default programs -->
+          <RegistryKey Root="HKLM" Key="SOFTWARE\RegisteredApplications">
+            <RegistryValue Name="Zimbra Desktop" Value="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities" Type="string" />
+          </RegistryKey>
+
+          <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\zdclient.exe">
+            <RegistryValue Value="[APPLICATIONFOLDER]win64\node-webkit\zdclient.exe" Type="string" />
+            <RegistryValue Name="Path" Value="[APPLICATIONFOLDER]win64\node-webkit" Type="string" />
+          </RegistryKey>
+
         </Component>
 
       </Directory>  <!-- PromgramFilesFolder -->

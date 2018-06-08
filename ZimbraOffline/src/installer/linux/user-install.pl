@@ -14,6 +14,7 @@ my $locale = "en_US";
 my $home_dir = $ENV{HOME} || die("Error: unable to get user home directory");
 my $app_root;
 my $data_root;
+my $tmpdir;
 my $default_data_root = "$home_dir/zdesktop";
 
 my $messages = {
@@ -159,6 +160,59 @@ sub dialog_desktop_icon() {
     return get_input(get_message("ChooseIconDir"), "$home_dir/Desktop");
 }
 
+# This will be only used when upgrading from 7.2 to 7.3
+sub upgradePreferences() {
+    my $src_file = "$tmpdir/profile/prefs.js";
+    my $dest_folder = "$data_root/conf";
+    my $dest_file = "$dest_folder/local_prefs.json";
+    my $pref = "";
+
+    # No existing preferences found
+    if (!-e $src_file) {
+        return;
+    }
+
+    if(!-e $dest_folder) {
+        return;
+    }
+
+    # Read existing prism preference from tmp directory
+    my %attrs;
+    open(my $fh1, '<', $src_file) or die "Could not open file '$src_file' $!";
+    my $cnt =0 ;
+    while(my $row = <$fh1>) {
+        chomp $row;
+        if ($row =~ m/intl.accept_languages/ || $row =~ m/app.update.channel/) {
+            my @parts = split /[(),\s\";]+/, $row;
+            $attrs{$parts[1]} = $parts[2];
+            $cnt++;
+        }
+    }
+    close $fh1;
+
+    # If user preferences are present then write them to new system in JSON format
+    if ($cnt > 0) {
+        my $content = "{";
+        for my $attribute (keys %attrs) {
+            my $val = $attrs{$attribute};
+            if ($attribute =~ m/intl.accept_languages/) {
+                #replace - with _ in locale
+                $val =~ s/-/_/g;
+                $attribute = "LOCALE_NAME";
+            }
+            if ($attribute =~ m/app.update.channel/) {
+                $attribute = "AUTO_UPDATE_NOTIFICATION";
+            }
+            $content = $content . "\"$attribute\":\"$val\",";
+        }
+        $content = substr $content, 0, length($content) - 1;
+        $content = $content . "}";
+        open(my $fh2, '>', $dest_file) or die "Could not open file '$dest_file' $!";
+        print $fh2 $content;
+        close $fh2;
+    }
+}
+
 # main
 my $icon_dir;
 
@@ -181,9 +235,9 @@ $data_root = dialog_data_root();
 dialog_confirm_data_root();
 $icon_dir = dialog_desktop_icon();
 
-my $tmpdir = "$data_root" . ".tmp";
+$tmpdir = "$data_root" . ".tmp";
 my @user_files = ("index", "store", "sqlite", "log", "zimlets-properties", "zimlets-deployed",
-    "conf/keystore", "profile/prefs.js", "profile/persdict.dat", "profile/localstore.json");
+    "conf/keystore", "conf/local_prefs.json", "profile/persdict.dat", "profile/localstore.json");
 
 my $is_upgrade = 0;
 if (-e $data_root) {
@@ -199,6 +253,10 @@ if (-e $data_root) {
         my $src = "$data_root/$_";
         system("mv -f \"$src\" \"$tmpdir/$_\"") if (-e $src);
     }
+
+    # Copy prism preference file, we will not add it to aUserFiles as
+    # we don't want to restore the same file instead we will convert it to NWJS system
+    system("mv -f \"$data_root/profile/prefs.js\" \"$tmpdir/profile/prefs.js\"") if (-e "$data_root/profile/prefs.js");
 
     system("rm -rf \"$data_root\"");
 }
@@ -224,8 +282,7 @@ print get_message('Configuring');
 find_and_replace("$data_root/conf/localconfig.xml", $tokens);
 find_and_replace("$data_root/jetty/etc/jetty.xml", $tokens);
 find_and_replace("$data_root/bin/zdesktop", $tokens);
-find_and_replace("$data_root/zdesktop.webapp/webapp.ini", $tokens);
-find_and_replace("$data_root/profile/user.js", $tokens);
+find_and_replace("$app_root/linux/zdrun.pl", $tokens);
 print get_message('Done'), "\n";
 
 # create desktop icon
@@ -235,6 +292,10 @@ find_and_replace("$icon_dir/zd.desktop", $tokens);
 print get_message('Done'), "\n";
 
 if ($is_upgrade) {
+
+    # handle preferences seperately when upgrading from 7.2 (prism) to 7.3 (nwjs)
+    upgradePreferences();
+
 	for (@user_files) {
         my $src = "$tmpdir/$_";
         next if (! -e $src);
@@ -254,7 +315,7 @@ system("chmod 700 \"$data_root\"");
 
 print get_message('Success', [$ENV{USER}]), "\n\n";
 print get_message('RunCommand'), "\n";
-my $cmd = "\"$app_root/linux/prism/zdclient\" -webapp \"$data_root/zdesktop.webapp\" -override \"$data_root/zdesktop.webapp/override.ini\" -profile \"$data_root/profile\"";
+my $cmd = "\"$app_root/linux/zdrun.pl\"";
 print "$cmd\n\n";
 
 print get_message('LaunchZD');

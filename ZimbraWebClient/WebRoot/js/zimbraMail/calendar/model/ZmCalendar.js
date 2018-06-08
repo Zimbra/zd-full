@@ -278,28 +278,35 @@ function(acct) {
 	url = this._generateRestUrl(acct);
 	DBG.println(AjxDebug.DBG3, "NO REST URL FROM SERVER. GENERATED URL: " + url);
 
-	return url;
+	//escape single quote. This was causing a crash.
+	return url.replace(/'/g, "%27");
 };
 
 ZmCalendar.prototype._generateRestUrl =
 function(acct) {
 	var loc = document.location;
+	//document.location returns information like below  
+    //{hash: "", search: "?at=64b210b4-9da5-1ed6-42af-862be351f654&localeId=en_US&dev=1", pathname: "/desktop/login.jsp", port: "63400", hostname: "127.0.0.1" host: "127.0.0.1:63400" hostname: "127.0.0.1"href: "http://127.0.0.1:63400/desktop/login.jsp?at=64b210b4-9da5-1ed6-42af-862be351f654&localeId=en_US&dev=1"origin: "http://127.0.0.1:63400"pathname: "/desktop/login.jsp"port: "63400"protocol: "http:
+
 	var owner = this.getOwner();
-	var uname = owner || appCtxt.get(ZmSetting.USERNAME);
-    if (appCtxt.multiAccounts) {
-        uname = appCtxt.get(ZmSetting.USERNAME, null, acct)
-    }
+	
+	//Get the user name to whom calendar item belongs.
+	var uname = this.parent.account.name;
+
 	var m = uname.match(/^(.*)@(.*)$/);
+	
+	//loc.host:127.0.0.1:<port> and loc.hostname:127.0.0.1
 	var host = loc.host || (m && m[2]);
 
 	// REVISIT: What about port? For now assume other host uses same port
-	if (loc.port && loc.port != 80 && (owner == appCtxt.get(ZmSetting.USERNAME))) {
+	// For Zimbra Desktop jetty port would be dynamic. Add port number to URL only if it's not added already.
+	if (host.indexOf(":") == -1 && loc.port && loc.port != 80 && (owner == appCtxt.get(ZmSetting.USERNAME))) {
 		host = host + ":" + loc.port;
 	}
 
 	return [
 		loc.protocol, "//", host, "/service/user/", uname, "/",
-		AjxStringUtil.urlEncode(this.getSearchPath(true))
+		AjxStringUtil.urlEncode(this.getSearchPath(true)).replace(/'/g, "%27")
 	].join("");
 };
 

@@ -6,7 +6,7 @@
 <%@ taglib prefix="zd" tagdir="/WEB-INF/tags/desktop" %>
 <%@ taglib prefix="zm" uri="com.zimbra.zm" %>
 
-<zd:auth/>
+<zd:auth localeId="${param.localeId}"/>
 
 <%!
     static String getParameter(HttpServletRequest request, String pname, String defValue) {
@@ -41,25 +41,28 @@
  * 
 -->
 <%
-    java.util.List<String> localePref = authResult.getPrefs().get("zimbraPrefLocale");
-    if (localePref != null && localePref.size() > 0)
-	request.setAttribute("localeId", localePref.get(0));
+    /*java.util.List<String> localePref = authResult.getPrefs().get("zimbraPrefLocale");
+    if (localePref != null && localePref.size() > 0) {
+        request.setAttribute("localeId", localePref.get(0));
+    }*/
 
     boolean isDev = getParameter(request, "dev", "0").equals("1");
     boolean shouldShowPwdLock = !(getParameter(request, "showPwdLock", "true").equals("false"));
 
     if (isDev) {
-	if (request.getAttribute("debug") == null)
-	    request.setAttribute("debug", "1");
-	request.setAttribute("fileExtension", "");
-	request.setAttribute("gzip", "false");
-	request.setAttribute("mode", "mjsf");
-	request.setAttribute("packages", "dev");
+        if (request.getAttribute("debug") == null) {
+            request.setAttribute("debug", "1");
+        }
+        request.setAttribute("fileExtension", "");
+        request.setAttribute("gzip", "false");
+        request.setAttribute("mode", "mjsf");
+        request.setAttribute("packages", "dev");
     }
 
     boolean isScriptErrorOn = getParameter(request, "scripterrors", "0").equals("1");    
     boolean isNotifyDebugOn = getParameter(request, "notifydebug", "0").equals("1");
     String debug = getParameter(request, "debug", getAttribute(request, "debug", null));
+    String debugLogTarget = getParameter(request, "log", getAttribute(request, "log", null));
     String extraPackages = getParameter(request, "packages", getAttribute(request, "packages", null));
     String mode = getAttribute(request, "mode", null);
     boolean isDevMode = mode != null && mode.equalsIgnoreCase("mjsf");
@@ -70,27 +73,27 @@
     String editor = getParameter(request, "editor", "");
     String ext = getAttribute(request, "fileExtension", null);
     String lang = "";
-    Locale locale = request.getLocale();
-    String localeId = getAttribute(request, "localeId", null);
+    String localeId = getParameter(request, "localeId", null);
     String prodMode = getAttribute(request, "prodMode", "");
     String res;
     String skin = authResult.getSkin();
     String vers = getAttribute(request, "version", "");
 
-    if (ext == null || isDevMode)
-	ext = "";
-    if (localeId != null) {
-	int index = localeId.indexOf("_");
-	if (index == -1) {
-	    lang = "&language=" + localeId;
-	    locale = new Locale(localeId);
-	} else {
-	    String language = localeId.substring(0, index);
-	    String country = localeId.substring(localeId.length() - 2);
-	    lang = "&language=" + language + "&country=" + country;;
-	    locale = new Locale(language, country);
-	}
+    if (ext == null || isDevMode) {
+        ext = "";
     }
+
+    if (localeId != null) {
+        int index = localeId.indexOf("_");
+        if (index == -1) {
+            lang = "&language=" + localeId;
+        } else {
+            String language = localeId.substring(0, index);
+            String country = localeId.substring(localeId.length() - 2);
+            lang = "&language=" + language + "&country=" + country;;
+        }
+    }
+
     res = "?v=" + vers + (isDebug ? "&debug=1" : "") + lang + "&skin=" + skin + "&mode="+mode;
 
     pageContext.setAttribute("app", "");
@@ -104,12 +107,12 @@
     pageContext.setAttribute("isNotifyDebugOn", isNotifyDebugOn);
     pageContext.setAttribute("isOfflineMode", "true");
     pageContext.setAttribute("isProdMode", !prodMode.equals(""));
-    pageContext.setAttribute("locale", locale);
     pageContext.setAttribute("res", res);
     pageContext.setAttribute("skin", skin);
     pageContext.setAttribute("vers", vers);
 %>
 
+<fmt:getLocaleRequest var='locale' scope='request' />
 <fmt:setLocale value='${locale}' scope='request' />
 <fmt:setBundle basename="/messages/ZdMsg" scope="request" />
 
@@ -133,6 +136,9 @@
     window.isScriptErrorOn = ${isScriptErrorOn};
     window.isNotifyDebugOn = ${isNotifyDebugOn};
     window.isOffline = true;
+
+    // Flag to make sure NWJS is able to differentiate between main window and child windows
+    window.mainWindow = true;
 </script>
 </head>
 <body>
@@ -255,7 +261,11 @@
 
 	var prodMode = ${isProdMode};
 	var debugLevel = "<%= (debug != null) ? debug : "" %>";
-	window.DBG = new AjxDebug(AjxDebug.NONE, null, false);
+    var debugLogTarget = "<%= (debugLogTarget != null) ? debugLogTarget : "" %>";
+	window.DBG = new AjxDebug({
+        level: AjxDebug.NONE,
+        target: debugLogTarget
+    });
     // figure out the debug level
 	if (debugLevel == 't') {
 		DBG.showTiming(true);

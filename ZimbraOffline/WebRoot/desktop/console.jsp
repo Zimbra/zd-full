@@ -2,19 +2,22 @@
  * 
 -->
 <%@ page contentType="text/html;charset=UTF-8" language="java" session="false" %>
+<%@ page import="java.util.Locale" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="com.zimbra.i18n" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="zd" tagdir="/WEB-INF/tags/desktop" %>
 <%@ taglib prefix="zdf" uri="com.zimbra.cs.offline.jsp" %>
 
+<fmt:getLocaleRequest var='locale' scope='request' />
+<fmt:setLocale value='${locale}' scope='request' />
 <fmt:setBundle basename="/messages/ZdMsg" scope="request"/>
 
 <jsp:useBean id="bean" class="com.zimbra.cs.offline.jsp.ConsoleBean"/>
 <jsp:setProperty name="bean" property="*"/>
 <jsp:setProperty name="bean" property="locale" value="${pageContext.request.locale}"/>
 
-<zd:auth/>
+<zd:auth localeId="${param.localeId}"/>
 
 <c:set var="accounts" value="${bean.accounts}"/>
 <c:set var='add'><fmt:message key='AccountAdd'/></c:set>
@@ -36,6 +39,9 @@
 <script type="text/javascript" src="/js/desktop.js"></script>
 
 <script type="text/javascript">
+// Flag to make sure NWJS is able to differentiate between main window and child windows
+window.mainWindow = true;
+
 function OnAdd() {
     window.location = "${zdf:addAuthToken('/desktop/accsetup.jsp', pageContext.request)}";
 }

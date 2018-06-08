@@ -2,5 +2,5 @@
 Name=Zimbra Desktop
 Type=Application
 Comment=Web Application
-Exec="@install.app.root@/linux/prism/zdclient" -webapp "@install.data.root@/zdesktop.webapp" -override "@install.data.root@/zdesktop.webapp/override.ini" -profile "@install.data.root@/profile"
-Icon=@install.data.root@/zdesktop.webapp/icons/default/launcher.png
+Exec="@install.app.root@/linux/zdrun.pl" 
+Icon=@install.app.root@/linux/node-webkit/img/launcher_32x32.png

@@ -728,7 +728,13 @@ function() {
     ZmOperation.registerOp(ZmId.OP_ACCEPT_PROPOSAL, {textKey:"replyAccept", image:"Check"});
 	ZmOperation.registerOp(ZmId.OP_ADD_FILTER_RULE, {textKey:"newFilter", image:"Plus"}, ZmSetting.FILTERS_ENABLED);
 	ZmOperation.registerOp(ZmId.OP_ADD_SIGNATURE, {textKey:"signature", image:"AddSignature", tooltipKey:"chooseSignature"}, ZmSetting.SIGNATURES_ENABLED);
-	ZmOperation.registerOp(ZmId.OP_CHECK_MAIL, {textKey:"checkMail", tooltipKey:"checkMailPrefDefault", image:"Refresh", textPrecedence:90});
+
+    if(appCtxt.isOffline) {
+        ZmOperation.registerOp(ZmId.OP_CHECK_MAIL, {textKey:"sendReceive", tooltipKey:"sendReceive", image:"Refresh", textPrecedence:90});
+    } else {
+        ZmOperation.registerOp(ZmId.OP_CHECK_MAIL, {textKey:"checkMail", tooltipKey:"checkMailPrefDefault", image:"Refresh", textPrecedence:90});
+    }
+
 	ZmOperation.registerOp(ZmId.OP_CHECK_MAIL_DEFAULT, {textKey:"checkMailDefault"});
 	ZmOperation.registerOp(ZmId.OP_CHECK_MAIL_UPDATE, {textKey:"checkMailUpdate"});
 	ZmOperation.registerOp(ZmId.OP_COMPOSE_OPTIONS, {textKey:"options", image:"Preferences"});
@@ -777,6 +783,7 @@ function() {
 	ZmOperation.registerOp(ZmId.OP_SEND_MENU, {textKey:"send", tooltipKey:"sendTooltip", image:"Send"}, ZmSetting.SAVE_DRAFT_ENABLED);
 	ZmOperation.registerOp(ZmId.OP_SEND_LATER, {textKey:"sendLater", tooltipKey:"sendLaterTooltip", image:"SendLater"}, ZmSetting.SAVE_DRAFT_ENABLED);
 	ZmOperation.registerOp(ZmId.OP_SHOW_BCC, {textKey:"showBcc"});
+	ZmOperation.registerOp(ZmId.OP_SHOW_DOWNLOADS, {textKey:"showDownloads", tooltipKey:"showDownloadsToolTip", image:"DownloadList"});
 	ZmOperation.registerOp(ZmId.OP_SHOW_ONLY_MAIL, {textKey:"showOnlyMail", image:"Conversation"}, ZmSetting.MIXED_VIEW_ENABLED);
 	ZmOperation.registerOp(ZmId.OP_SHOW_ORIG, {textKey:"showOrig", image:"Message"});
 	ZmOperation.registerOp(ZmId.OP_SPAM, {textKey:"junkLabel", tooltipKey:"junkTooltip", image:"JunkMail", shortcut:ZmKeyMap.SPAM, textPrecedence:70}, ZmSetting.SPAM_ENABLED);
@@ -1147,7 +1154,11 @@ function(creates) {
 			}
 		}
 
-		if (parsed && parsed.id == ZmOrganizer.ID_INBOX) {
+		var doIt = (appCtxt.get(ZmSetting.OFFLINE_NOTIFY_NEWMAIL_ON_INBOX))
+				? (parsed && parsed.id == ZmOrganizer.ID_INBOX)
+				: (parsed && parsed.id != ZmOrganizer.ID_SPAM && parsed.id != ZmOrganizer.ID_TRASH);
+
+		if (doIt) {
 			// for multi-account, highlite the non-active accordion item
 			if (appCtxt.accountList.size() > 1) {
 				ZmAccountAlert.get(acct).start(this);
@@ -1925,17 +1936,11 @@ function(organizer) {
 ZmMailApp.prototype._setNewMailBadge =
 function() {
 	if (appCtxt.isOffline && appCtxt.get(ZmSetting.OFFLINE_SUPPORTS_DOCK_UPDATE)) {
-		if (AjxEnv.isMac && window.platform) {
-			window.platform.icon().badgeText = (this.globalMailCount > 0)
-				? this.globalMailCount : null;
-		}
-		else if (AjxEnv.isWindows) {
-			window.platform.icon().imageSpec = (this.globalMailCount > 0)
-				? "resource://webapp/icons/default/newmail.png"
-				: "resource://webapp/icons/default/launcher.ico";
-			window.platform.icon().title = (this.globalMailCount > 0)
-				? AjxMessageFormat.format(ZmMsg.unreadCount, this.globalMailCount) : null;
-		}
+
+        // update badge for notifications
+        if (window.isNodeWebkit) {
+            NodeWebkitInitEnd.updateBadgeOnNotifications(this.globalMailCount, AjxMessageFormat.format(ZmMsg.unreadCount, this.globalMailCount));
+        }
 	}
 };
 

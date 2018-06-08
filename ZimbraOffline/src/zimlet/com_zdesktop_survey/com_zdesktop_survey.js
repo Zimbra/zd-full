@@ -188,7 +188,7 @@ function() {
 
 ZmSurveyZimlet.prototype._isOnline =
 function() {
-	return appCtxt.getAppController()._isPrismOnline;
+	return appCtxt.getAppController()._isNodeWebkitOnline;
 };
 
 ZmSurveyZimlet.prototype._showWarningMsg = function(message) {

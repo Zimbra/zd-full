@@ -2,6 +2,7 @@
  * 
 -->
 <%@ page contentType="text/html;charset=UTF-8" language="java" session="false" buffer="32kb"%>
+<%@ page import="java.util.Locale" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="com.zimbra.i18n" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
@@ -10,9 +11,11 @@
 
 <jsp:useBean id="extBean" class="com.zimbra.cs.offline.jsp.ExtensionBean"/>
 
+<fmt:getLocaleRequest var='locale' scope='request' />
+<fmt:setLocale value='${locale}' scope='request' />
 <fmt:setBundle basename="/messages/ZdMsg" scope="request"/>
 
-<zd:auth/>
+<zd:auth localeId="${param.localeId}"/>
 
 <c:set var='accountFlavor' value="${param.accountFlavor eq null ? '' : param.accountFlavor}"/>
 <c:set var='verb' value="${param.verb eq null ? '' : param.verb}"/>
@@ -21,7 +24,7 @@
 <c:set var='betaLink'>
     <fmt:message key='BetaNoteSupport'>
         <fmt:param>
-            <a href=https://www.zimbra.com/products/desktop_support.html target=_blank><fmt:message key='BetaNoteLink'/></a>
+            <a href="https://www.zimbra.com/products/desktop_support.html" target="_blank"><fmt:message key='BetaNoteLink'/></a>
         </fmt:param>
     </fmt:message>
 </c:set>
@@ -45,7 +48,7 @@
         </c:set>
         <c:set var="helpInfo">
             <ol>
-                <li><fmt:message key='GmailLogin'><fmt:param><a href=http://gmail.com target=_blank><fmt:message key='Gmail'/></a></fmt:param></fmt:message></li>
+                <li><fmt:message key='GmailLogin'><fmt:param><a href="http://gmail.com" target="_blank"><fmt:message key='Gmail'/></a></fmt:param></fmt:message></li>
                 <li><fmt:message key='GmailClickTop'><fmt:param><b><fmt:message key='GmailSettingsLink'/></b></fmt:param></fmt:message></li>
                 <li><fmt:message key='GmailClick'><fmt:param><b><fmt:message key='GmailFwdPOP'/></b></fmt:param></fmt:message></li>
                 <li><fmt:message key='GmailSelect'><fmt:param><b><fmt:message key='GmailEnableIMAP'/></b></fmt:param></fmt:message></li>
@@ -111,14 +114,15 @@
         <c:set var="bean" value="${ybean}" scope="request"/>
         <c:set var="help">
             <fmt:message key='YMPNote'>
-                <fmt:param><a href=http://mail.yahoo.com target=_blank><fmt:message key='YMPLink'/></a></fmt:param>
+                <fmt:param><a href="http://mail.yahoo.com" target="_blank"><fmt:message key='YMPLink'/></a></fmt:param>
             </fmt:message>
         </c:set>
     </c:when>
     <c:when test="${accountFlavor eq 'Zimbra'}">
         <jsp:useBean id="zbean" class="com.zimbra.cs.offline.jsp.ZmailBean" scope="request"/>
         <jsp:setProperty name="zbean" property="*"/>
-        <jsp:setProperty name="zbean" property="locale" value="${pageContext.request.locale}"/>
+        <jsp:setProperty name="zbean" property="locale" value="${locale}"/>
+
         ${zdf:doRequest(zbean)}
         <c:set var="bean" value="${zbean}" scope="request"/>
         <c:set var="help">
@@ -153,6 +157,9 @@
 <script type="text/javascript" src="/js/desktop.js"></script>
 
 <script type="text/javascript">
+
+// Flag to make sure NWJS is able to differentiate between main window and child windows
+window.mainWindow = true;
 
 function InitScreen() {
 }
@@ -665,7 +672,7 @@ function changeDateFields(selectObj) {
                                                     <td>
                                                         <div class="${zdf:isValid(bean, 'username') ? 'ZFieldLabel' : 'ZFieldError'}"><fmt:message key='UserName'/>:</div>
                                                     </td>
-                                                    <td><input class="ZField" type="text" id="username" name="username" value="${fn:escapeXml(bean.username)}"></td>
+                                                    <td><input class="ZField" type="text" id="username" name="username" value="${fn:escapeXml(bean.username)}" autocomplete="nope"></td>
                                                 </tr>
                                             </c:if>
                                         </c:if>
@@ -677,7 +684,7 @@ function changeDateFields(selectObj) {
                                                 <table border=0 cellpadding=0 cellspacing=0 width=100% class="ZTableInner">
                                                     <tr>
                                                         <td>
-                                                            <input class="ZField" type="password" id="password" name="password" value="${fn:escapeXml(bean.password)}" disabled="disabled">
+                                                            <input class="ZField" type="password" id="password" name="password" value="${fn:escapeXml(bean.password)}" disabled="disabled" autocomplete="new-password">
                                                         </td>
                                                         <td class="ZSubLink" id="passwordLink">
                                                             <a href="javascript:;" onclick="onEditLink('password'); return false;"><fmt:message key='Edit'/></a>

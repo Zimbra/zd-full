@@ -619,7 +619,8 @@ function() {
 	if (appCtxt.isOffline) {
 		ZmPref.registerPref("OFFLINE_IS_MAILTO_HANDLER", {
 			displayName:		ZmMsg.offlineAllowMailTo,
-			displayContainer:	ZmPref.TYPE_CHECKBOX
+			displayContainer:	ZmPref.TYPE_CHECKBOX,
+            changeFunction:     ZmPref.onChangeDefaultApp
 		});
 
 		// Do not show enable document preference.
@@ -666,8 +667,8 @@ function() {
         ZmPref.registerPref("OFFLINE_UPDATE_NOTIFY", {
             displayName:		ZmMsg.offlineUpdateNotify,
             displayContainer:	ZmPref.TYPE_SELECT,
-            displayOptions:		[ZmMsg.offlineUpdateRelease, ZmMsg.offlineUpdateBeta],
-            options:    		["release", "beta"]
+            displayOptions:		[ZmMsg.offlineUpdateRelease, ZmMsg.offlineUpdateBeta, ZmMsg.OfflineUpdateDoNotNotify],
+            options:    		["release", "beta", "doNotNotify"]
         });
 
         ZmPref.registerPref("AUTO_ARCHIVE_ENABLED", {

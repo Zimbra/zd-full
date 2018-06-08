@@ -1179,9 +1179,6 @@ public class OfflineProvisioning extends Provisioning implements OfflineConstant
                     if (webappUri == null || !webappUri.equals(uri)) {
                         setAccountAttribute(account, A_offlineWebappUri, uri);
                     }
-                    if (OfflineLC.zdesktop_relabel.value().equalsIgnoreCase(CHN_BETA) && !CHN_BETA.equalsIgnoreCase(account.getAttr(A_zimbraPrefOfflineUpdateChannel, null))) {
-                        setAccountAttribute(account, A_zimbraPrefOfflineUpdateChannel, CHN_BETA);
-                    }
                     localAccount = account;
                 }
             }

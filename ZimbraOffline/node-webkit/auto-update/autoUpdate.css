@@ -1,0 +1,114 @@
+body {
+    margin: 0;
+    background-color: #ECECEC;
+    -webkit-app-region: drag;
+    font-family: HelveticaNeue, arial, sans-serif;
+}
+
+p {
+    margin: 0;
+}
+
+button {
+    min-height: 20px;
+    min-width: 70px;
+    border-radius: 4px;
+    font-size: 13px;
+    letter-spacing: 0.2px;
+    text-align: center;
+    border: solid 1px #cccccc;
+    background-color: #ffffff;
+}
+
+.detailsSectionDiv {
+    overflow:hidden;
+    text-align: left;
+    padding :20px 0px 5px 0px;
+}
+
+.hiddenDiv {
+    display: none;
+}
+
+.rightDiv {
+    float: right;
+}
+
+.titleDiv {
+    padding-top : 3px;
+    background-color: #D3D3D3;
+    font-size: 13px;
+    letter-spacing: 0.2px;
+    color: #333333;
+    border-bottom: 1px solid #BBB;
+}
+
+.iconDiv {
+    max-width: 100%;
+    white-space:nowrap;
+    overflow:hidden;
+    float: left;
+    padding: 20px;
+}
+
+.icon {
+    width: 64px;
+    height: 64px;
+}
+
+.singleBtnMargin {
+    margin: 40px;
+}
+
+.center {
+    text-align: center; 
+}
+
+.rightBtn {
+    margin-left: 10px;
+}
+
+.highlightBtn {
+    background-image: linear-gradient(to bottom, #4ca2f9, #025cff);
+    color: #ffffff;
+}
+
+.screenHeader {
+    height: 16px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #333333;
+}
+
+.detailsText {
+    height: 30px;
+    font-size: 13px;
+    margin-top: 10px;
+    color: #333333;
+}
+
+.checkUpdateBar {
+    width: 476px;
+    margin-top: 10px;
+}
+
+.updateBtnDiv {
+    float: right;
+    margin: 40px;
+}
+
+.outerDiv {
+    width: 496px;
+    height:12px;
+    border-radius: 4px;
+    margin-top:12px;
+    background-color: #e0e0e0;
+}
+
+.progBarDiv {
+    height:12px;
+    background-color:#2a96fb;
+    width: 0%;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius:4px;
+}

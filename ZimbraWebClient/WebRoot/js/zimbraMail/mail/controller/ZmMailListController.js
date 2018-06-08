@@ -59,6 +59,7 @@ ZmMailListController = function(container, mailApp) {
 		this._listeners[ZmOperation.SPAM] = new AjxListener(this, this._spamListener);
 	}
 
+    this._listeners[ZmOperation.SHOW_DOWNLOADS] = new AjxListener(this, ZmListController.prototype._showDownloadsListener);
 	this._listeners[ZmOperation.DETACH] = new AjxListener(this, this._detachListener);
 	this._inviteReplyListener = new AjxListener(this, this._inviteReplyHandler);
 	this._shareListener = new AjxListener(this, this._shareHandler);
@@ -1614,7 +1615,7 @@ function(parent, num) {
 	var folder = folderId && appCtxt.getById(folderId);
 
 	parent.enable(ZmOperation.PRINT, num > 0);
-
+    parent.enable(ZmOperation.SHOW_DOWNLOADS, true);
 	if (folder && folder.nId == ZmOrganizer.ID_SYNC_FAILURES) {
 		parent.enableAll(false);
 		parent.enable([ZmOperation.NEW_MENU, ZmOperation.CHECK_MAIL], true);

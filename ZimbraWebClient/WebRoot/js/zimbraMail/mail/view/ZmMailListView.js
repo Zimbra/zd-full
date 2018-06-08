@@ -178,7 +178,6 @@ function(field, item) {
 	return "";
 };
 
-
 ZmMailListView.prototype._getAbridgedCell =
 function(htmlArr, idx, item, field, colIdx, width, attr) {
 	var params = {};

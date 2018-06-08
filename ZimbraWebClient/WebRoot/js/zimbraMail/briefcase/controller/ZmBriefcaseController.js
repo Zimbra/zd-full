@@ -48,6 +48,7 @@ ZmBriefcaseController = function(container, app) {
     this._listeners[ZmOperation.CHECKOUT] = new AjxListener(this, this._checkoutListener);
     this._listeners[ZmOperation.DISCARD_CHECKOUT] = new AjxListener(this, this._handleDiscardCheckout);
     this._listeners[ZmOperation.RESTORE_VERSION] = new AjxListener(this, this._restoreVerListener);
+    this._listeners[ZmOperation.SHOW_DOWNLOADS] = new AjxListener(this, ZmListController.prototype._showDownloadsListener);
 
 	this._dragSrc = new DwtDragSource(Dwt.DND_DROP_MOVE);
 	this._dragSrc.addDragListener(new AjxListener(this, this._dragListener));
@@ -153,8 +154,8 @@ function() {
 		ops.push(ZmOperation.SEND_FILE_MENU,ZmOperation.SEP);
 	}
 
+    ops.push(ZmOperation.SEP, ZmOperation.SHOW_DOWNLOADS, ZmOperation.SEP);
     ops.push(ZmOperation.VIEW_MENU);
-
 	return ops;
 };
 

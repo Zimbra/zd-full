@@ -68,6 +68,7 @@ ZmCalViewController = function(container, calApp) {
 	this._listeners[ZmOperation.REPLY] = new AjxListener(this, this._replyListener);
 	this._listeners[ZmOperation.REPLY_ALL] = new AjxListener(this, this._replyAllListener);
 	this._listeners[ZmOperation.DUPLICATE_APPT] = new AjxListener(this, this._duplicateApptListener);
+    this._listeners[ZmOperation.SHOW_DOWNLOADS] = new AjxListener(this, ZmListController.prototype._showDownloadsListener);
 
 	this._treeSelectionListener = new AjxListener(this, this._calTreeSelectionListener);
 	this._maintTimedAction = new AjxTimedAction(this, this._maintenanceAction);
@@ -810,6 +811,8 @@ function() {
 		ZmOperation.TAG_MENU,
 		ZmOperation.SEP,
 		ZmOperation.TODAY,
+        ZmOperation.SEP,
+        ZmOperation.SHOW_DOWNLOADS,
         ZmOperation.SEP,
         ZmOperation.VIEW_MENU
 	];

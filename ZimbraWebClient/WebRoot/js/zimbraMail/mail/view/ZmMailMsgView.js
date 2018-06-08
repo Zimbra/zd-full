@@ -2178,6 +2178,25 @@ function(msgId, partId) {
 	ac.getApp(ZmApp.CONTACTS).createFromVCard(msgId, partId);
 };
 
+ZmMailMsgView.downloadAndOpenAttachmentCallback =
+function(downloadURL) {
+    chrome.downloads.download({"url": downloadURL}, function() { 
+        //download has initiated, adding listener to track changes.
+        chrome.downloads.onChanged.addListener(handleDownloadAndOpen);
+    });
+
+    function handleDownloadAndOpen(e) {
+         if(e.filename) { 
+             fileName=e.filename.current;
+         }
+         if(e.state && e.state.current == "complete") {
+             chrome.downloads.onChanged.removeListener(handleDownloadAndOpen);
+             nw.Shell.openItem(fileName);
+         }
+    };
+};
+
+
 ZmMailMsgView.removeAttachmentCallback =
 function(msgId, partIds) {
 	ZmZimbraMail.unloadHackCallback();

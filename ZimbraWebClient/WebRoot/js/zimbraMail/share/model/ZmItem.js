@@ -355,7 +355,7 @@ function() {
 	var organizerType = ZmOrganizer.ITEM_ORGANIZER[this.type];
 	var organizer = appCtxt.getById(this.folderId);
 	var url = organizer
-		? ([organizer.getRestUrl(), "/", AjxStringUtil.urlComponentEncode(this.name)].join(""))
+		? ([organizer.getRestUrl(), "/", AjxStringUtil.urlComponentEncode(this.name).replace(/'/g, "%27")].join(""))
 		: null;
 
 	DBG.println(AjxDebug.DBG3, "NO REST URL FROM SERVER. GENERATED URL: " + url);

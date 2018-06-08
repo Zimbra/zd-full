@@ -384,3 +384,12 @@ INPUT[disabled='disabled'] {
 	font-size: 12px;
 	width: 100%;
 }
+/* selects last two td elements of table having class ZPanelBottom. */
+table.ZPanelBottom td:nth-last-child(-n + 2) {
+	display: none;
+}
+
+/* selects last two td elements of table having class ZPanelBottom for html element having data-isnodewebkit attribute. */
+html[data-isnodewebkit] table.ZPanelBottom td:nth-last-child(-n + 2) {
+	display: table-cell;
+}

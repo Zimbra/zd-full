@@ -99,7 +99,7 @@ public class PageBean {
         return LC.get(key);
     }
 
-    private static final String[] knownPassThroughFlags = new String[] {"dev","notifydebug","scripterrors"};
+    private static final String[] knownPassThroughFlags = new String[] {"dev","notifydebug","scripterrors","localeId"};
 
     public static String addAuthToken(String url, HttpServletRequest request) {
         String at = LC.get("zdesktop_installation_key");

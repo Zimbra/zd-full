@@ -325,6 +325,24 @@ function(params) {
 					//Show the password lock dialog
 					ZmZimbraMail._handlePasswordLock();
 				}
+                if(appCtxt.isOffline && window.isNodeWebkit) {
+                    var mailtoArg = NodeWebkitUtils.getAppParam('mailto');
+
+                    if(typeof mailtoArg != 'undefined') {
+                        var hash = NodeWebkitUtils.getHashOfString(mailtoArg);
+
+                        // if mailto url is already processed then we will ignore it, so we will not process it on every reload
+                        if(localStorage.getItem('mailto_url_hash') !== hash) {
+                            // Store hash of mailto url in localstorage so we can use it to ignore same url next time
+                            // this value will be not valid for next launch as at that time jetty port will get changed
+                            localStorage.setItem('mailto_url_hash', hash);
+
+                            this.handleOfflineMailTo(mailtoArg);
+                        } else {
+                            console.log('mailto url is already processed, ignoring this call');
+                        }
+                    }
+                }
 			});
 		this.addPostRenderCallback(callback, 0, 0, true);
 	}
@@ -338,11 +356,6 @@ function(params) {
 	// fetch meta data for the main account
 	var respCallback = new AjxCallback(this, this._handleResponseGetMetaData, params);
 	appCtxt.accountList.mainAccount.loadMetaData(respCallback);
-
-    if(appCtxt.isOffline) {
-        var updatePref = appCtxt.get(ZmSetting.OFFLINE_UPDATE_NOTIFY);
-        this._offlineUpdateChannelPref(updatePref)
-    }
 };
 
 ZmZimbraMail.registerViewsToTypeMap = function() {
@@ -590,12 +603,6 @@ function(params, result) {
             AjxTimedAction.scheduleAction(new AjxTimedAction(this, this.setInstantNotify, [true]), 4000);
         else
 		    this.setPollInterval(true);
-	} else {
-		if (appCtxt.get(ZmSetting.OFFLINE_SUPPORTS_MAILTO) && window.platform && 
-			window.platform.isRegisteredProtocolHandler("mailto")) {  
-		    // bug fix #34342 - always register the protocol handler for mac and linux on start up
-		    this.registerMailtoHandler(!AjxEnv.isWindows, true);
-		}    
 	}
 
 	window.onbeforeunload = ZmZimbraMail._confirmExitMethod;
@@ -827,16 +834,16 @@ function() {
 				this._runNextPostRenderCallback();
 			}), prcb.delay);
 	} else {
-		if (appCtxt.isOffline) {
+		if (appCtxt.isOffline) {	
 			this.sendClientEventNotify(ZmZimbraMail.UI_LOAD_END);
 
-			if (AjxEnv.isPrism) {
+			if (window.isNodeWebkit) {
 				this._firstTimeNetworkChange = true;
-
-				var nc = new ZimbraNetworkChecker();
-				nc.addEventListener("offline", function(e) { window["appCtxt"].getAppController().handleNetworkChange(false); }, false);
-				nc.addEventListener("online", function(e) { window["appCtxt"].getAppController().handleNetworkChange(true); }, false);
+				this.handleNetworkChange();
+				window.addEventListener('offline', this.handleNetworkChange.bind(this));
+				window.addEventListener('online', this.handleNetworkChange.bind(this));
 			}
+
 		}
 	}
 };
@@ -845,11 +852,10 @@ function() {
  * @private
  */
 ZmZimbraMail.prototype.handleNetworkChange =
-function(online) {
-	this._isPrismOnline = online;
-
+function() {
+	this._isNodeWebkitOnline = navigator.onLine;
 	if (this._isUserOnline || this._firstTimeNetworkChange) {
-		this._updateNetworkStatus(online);
+		this._updateNetworkStatus(navigator.onLine);
 	}
 };
 
@@ -1279,56 +1285,26 @@ function() {
 	return this._pollInstantNotifications;
 };
 
-ZmZimbraMail.prototype.registerMailtoHandler =
-function(regProto, selected) {
-	if (appCtxt.get(ZmSetting.OFFLINE_SUPPORTS_MAILTO) && window.platform) {
-		try { // add try/catch - see bug #33870
-			if (selected) { // user selected zd as default mail app 
-				// register mailto handler
-				if (regProto) {
-					var url = appCtxt.get(ZmSetting.OFFLINE_WEBAPP_URI, null, appCtxt.accountList.mainAccount);
-					window.platform.registerProtocolHandler("mailto", url + "&mailto=%s");
-				
-					// handle "send to mail recipient" on windows (requires mapi@zimbra.com extension)
-					if (AjxEnv.isWindows) {
-						var shell = new ZimbraDesktopShell;
-						shell.defaultClient = true;
-					}
-				}
-
-				// register mailto callback
-				var callback = AjxCallback.simpleClosure(this.handleOfflineMailTo, this);
-				window.platform.registerProtocolCallback("mailto", callback);
-			} else { // unselected (box unchecked) 
-				window.platform.unregisterProtocolHandler("mailto");
-
-				if (AjxEnv.isWindows) {
-					var shell = new ZimbraDesktopShell;
-					shell.defaultClient = false;
-				}
-			}
-		} catch(ex) {
-			// do nothing
-		}
-	}
-};
-
-/**
- * @private
- */
 ZmZimbraMail.prototype.handleOfflineMailTo =
 function(uri, callback) {
-	if (window.platform && !window.platform.isRegisteredProtocolHandler("mailto")) { return false; }
+	//window.navigator does not have isRegisteredProtocolHandler method
+	//if (window.platform && !window.platform.isRegisteredProtocolHandler("mailto")) { return false; }
 
 	var mailApp = this.getApp(ZmApp.MAIL);
 	var idx = (uri.indexOf("mailto"));
 	if (idx >= 0) {
 		var query = "to=" + decodeURIComponent(uri.substring(idx+7));
 		query = query.replace(/\?/g, "&");
+
+        // Remove extra double quote from end of the string
+        query = query.replace('"', '');
+
 		var controller = mailApp._showComposeView(callback, query);
-        	this._checkOfflineMailToAttachments(controller, query);
+        this._checkOfflineMailToAttachments(controller, query);
+
 		return true;
 	}
+
 	return false;
 };
 
@@ -1368,59 +1344,44 @@ ZmZimbraMail.prototype._handleMailToAttachment =
 function(attachment, controller) {
 
     var filePath = attachment;
-    var filename = filePath.replace(/^.*\\/, '');
+    var fileName = filePath.replace(/^.*\\/, '');
 
-    DBG.println("Uploading File :" + filename + ",filePath:" + filePath);
+    DBG.println("Uploading File :" + fileName + ",filePath:" + filePath);
 
-    //check read file permission;
-    try {
-        netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-    } catch (e) {
-        //permission denied to read file
-        DBG.println("Permission denied to read file");
-        return;
-    }
+    var self = this,
+        fs = require('fs');
 
-    try {
-        var file = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-        file.initWithPath( filePath );
+    // Read file contents and send it to server for file upload
+    fs.readFile(filePath, function(error, data) {
+        if (error) {
+            console.error('error reading file contents: ', error.code);
+            return;
+        }
 
-        var contentType = this._getAttachmentContentType(file);
-
-        var inputStream = Components.classes[ "@mozilla.org/network/file-input-stream;1" ].createInstance(Components.interfaces.nsIFileInputStream);
-        inputStream.init(file, -1, -1, false );
-
-        var binary = Components.classes[ "@mozilla.org/binaryinputstream;1" ].createInstance(Components.interfaces.nsIBinaryInputStream);
-        binary.setInputStream(inputStream);
+        // FileUploadServlet.java is also detecting content type based on file extension
+        var contentType = self._getAttachmentContentType(fileName);
 
         var req = new XMLHttpRequest();
-        req.open("POST", appCtxt.get(ZmSetting.CSFE_UPLOAD_URI)+"&fmt=extended,raw", true);
-        req.setRequestHeader("Cache-Control", "no-cache");
-        req.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-        req.setRequestHeader("Content-Type",  (contentType || "application/octet-stream") );
-        req.setRequestHeader("Content-Disposition", 'attachment; filename="'+ filename + '"');
+        req.open('POST', appCtxt.get(ZmSetting.CSFE_UPLOAD_URI)+'&fmt=extended,raw', true);
+        req.setRequestHeader('Cache-Control', 'no-cache');
+        req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        req.setRequestHeader('Content-Type', (contentType || 'application/octet-stream'));
+        // As per RFC 5987, use filename* field in header to send utf-8 filename, http://stackoverflow.com/a/20933751
+        req.setRequestHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\''+ encodeURIComponent(fileName));
 
         var reqObj = req;
-        req.onreadystatechange = AjxCallback.simpleClosure(this._handleUploadResponse, this, reqObj, controller);
-        req.sendAsBinary(binary.readBytes(binary.available()));
+        req.onreadystatechange = AjxCallback.simpleClosure(self._handleUploadResponse, self, reqObj, controller);
+        req.send(data.buffer);
+
         delete req;
-    }catch(ex) {
-        DBG.println("exception in handling attachment: " + attachment);
-        DBG.println(ex);
-        this._attachmentsProcessed++;
-    }
+    });
 };
 
 ZmZimbraMail.prototype._getAttachmentContentType =
-function(file) {
-	var contentType;
-	try {
-		contentType = Components.classes["@mozilla.org/mime;1"].getService(Components.interfaces.nsIMIMEService).getTypeFromFile(file);
-	}catch(ex) {
-		 DBG.println("exception in reading content type: " + ex);
-		 contentType =  "application/octet-stream";
-	}
-	return contentType;
+function(fileName) {
+    var mime = require('mime-types');
+
+    return mime.lookup(fileName);
 };
 
 ZmZimbraMail.prototype._handleUploadErrorResponse = function(respCode) {
@@ -2219,20 +2180,6 @@ function() {
 	}
 };
 
-ZmZimbraMail.prototype._offlineUpdateChannelPref =
-function(val) {
-    try {
-        netscape.security.PrivilegeManager.enablePrivilege('UniversalXPConnect');
-        var prefs =
-            Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
-        if (prefs) {
-            prefs.setCharPref("app.update.channel", val);
-        }
-    } catch (ex) {
-        DBG.println(AjxDebug.DBG1, "-----------Exception while setting update channel preference " + ex);
-    }
-};
-
 /**
  * Sets the user info.
  *
@@ -2323,20 +2270,15 @@ ZmZimbraMail.logOff =
 function(ev, relogin) {
 	ZmZimbraMail._isLogOff = true;
 
-	// bug fix #36791 - reset the systray icon when returning to Account Setup
-	if (appCtxt.isOffline && AjxEnv.isWindows &&
-		appCtxt.get(ZmSetting.OFFLINE_SUPPORTS_DOCK_UPDATE))
-	{
-		window.platform.icon().imageSpec = "resource://webapp/icons/default/launcher.ico";
-		window.platform.icon().title = null;
-	}
-
 	var urlParams = {
 		path: appContextPath,
 		qsArgs: {
-			loginOp: relogin ? 'relogin' : 'logout'
+			loginOp: relogin ? 'relogin' : 'logout',
+			// pass localeId in url so jsp pages can use to set locale
+			localeId: appCtxt.get(ZmSetting.LOCALE_NAME)
 		}
 	};
+
 	if (relogin) {
 		urlParams.qsArgs.username = appCtxt.getLoggedInUsername();
 	}
@@ -2347,8 +2289,6 @@ function(ev, relogin) {
 		DBG.println(AjxDebug.DBG1, "calling setExitTimer from logoff "  + new Date().toLocaleString());
 		ZmZimbraMail.setExitTimer(true);	
 	}
-	
-
 };
 
 /**
@@ -2637,7 +2577,7 @@ function() {
 	var ac = window["appCtxt"].getAppController();
 
 	// if already offline, then ignore this click
-	if (!ac._isPrismOnline) { return; }
+	if (!ac._isNodeWebkitOnline) { return; }
 
 	ac._isUserOnline = !ac._isUserOnline;
 	ac._updateNetworkStatus(ac._isUserOnline);

@@ -32,6 +32,7 @@ ZmTaskListController = function(container, app) {
 	this._listeners[ZmOperation.SHOW_ORIG] = new AjxListener(this, this._showOrigListener);
 	this._listeners[ZmOperation.MARK_AS_COMPLETED] = new AjxListener(this, this._markAsCompletedListener);
     this._listeners[ZmOperation.DELETE] = new AjxListener(this, this._deleteListener);
+    this._listeners[ZmOperation.SHOW_DOWNLOADS] = new AjxListener(this, ZmListController.prototype._showDownloadsListener);
 
 	this._currentTaskView = ZmId.VIEW_TASK_ALL;
 };
@@ -357,6 +358,8 @@ function() {
             ZmOperation.SORTBY_MENU,
             ZmOperation.SEP,
             ZmOperation.MARK_AS_COMPLETED,
+            ZmOperation.SEP,
+            ZmOperation.SHOW_DOWNLOADS,
             ZmOperation.SEP,
             ZmOperation.VIEW_MENU
             );

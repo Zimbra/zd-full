@@ -4,7 +4,7 @@
 ' ZD service control
 '
 
-Dim sAppRoot, sScriptPath, sScriptDir, sZdLogFile, sZdOutFile, sZdAnchorFile, sZdCtlErrFile, oWMI, oShell, oFso, sCurrUser, iLogLevel
+Dim sAppRoot, sScriptPath, sScriptDir, sZdLogFile, sZdLocalConfigFile, sZdOutFile, sZdAnchorFile, sZdCtlErrFile, oWMI, oShell, oFso, sCurrUser, iLogLevel
 
 Sub Usage()
     If (InStr(Wscript.FullName,"cscript") > 0) Then
@@ -124,7 +124,7 @@ Sub WaitAndTerm(iPid, iWaitTime)
 End Sub
 
 Sub StartServer()
-    Dim sCmd, oFile, iWaitTime 
+    Dim sCmd, oFile, iWaitTime, currentTime 
     
     If IsRunning() Then
         If Not oFso.FileExists(sZdAnchorFile) Then
@@ -156,7 +156,8 @@ Sub StartServer()
     If oFso.FileExists(sZdAnchorFile) Then
         oFso.DeleteFile sZdAnchorFile
     End If
-    
+
+    currentTime = Now
     sCmd = Chr(34) & sAppRoot & "\win32\zdesktop.exe" & Chr(34) & " " & Chr(34) & sScriptDir & "\..\conf\zdesktop.conf" & Chr(34)
     RunCmd sCmd, 2000
 
@@ -164,13 +165,31 @@ Sub StartServer()
    	Do Until iWaitTime <= 0
        	If oFso.FileExists(sZdAnchorFile) Then
             LogMsg "ZD service started", 0
+            isLocalConfigUpdated(currentTime)
            	Exit Sub
        	End If
        	WSCript.Sleep(1000)
        	iWaitTime = iWaitTime - 1000
    	Loop
+   	LogMsg "Failed to start ZD service, server process not started", 1
+    WriteLineToFile sZdCtlErrFile, "Failed to start ZD service, server process not started", true
+End Sub
+
+Sub isLocalConfigUpdated(currentTime)
+    Dim counter, lastModified, iWaitTime
+    counter = 0
+    iWaitTime = 20000
+    Do Until iWaitTime <= 0
+        lastModified = oFso.GetFile(sZdLocalConfigFile).DateLastModified
+        If lastModified > currentTime Then
+            LogMsg "Local config is updated", 0
+            Exit Sub
+        End If
+        WSCript.Sleep(1000)
+        iWaitTime = iWaitTime - 1000
+    Loop
     LogMsg "Failed to start ZD service", 1
-    WriteLineToFile sZdCtlErrFile, "Failed to start ZD service", true
+    WriteLineToFile sZdCtlErrFile, "Failed to start ZD service, config file not updated", true
 End Sub
 
 Sub StopServer()
@@ -199,21 +218,6 @@ Sub StopServer()
 	WaitAndTerm iZdPid, iWaitTime
 End Sub
 
-Sub Shutdown()
-    Dim iPrismPid, sCmd
-	
-    StopServer()
-	
-    iPrismPid = FindProcess("zdclient.exe")
-    If IsNull(iPrismPid) Then
-	    Exit Sub
-    End If
-
-    sCmd = Chr(34) & sAppRoot & "\win32\prism\zdclient.exe" & Chr(34) & " -close"
-    RunCmd sCmd, 0
-    WaitAndTerm iPrismPid, 5000
-End Sub
-
 '--------------------------------- main ---------------------------------
 Dim oArgs, oWN
 Set oArgs = WScript.Arguments
@@ -227,6 +231,7 @@ iLogLevel = 2 ' 1 - error 2 - warn - 4 info
 sAppRoot = "@install.app.root@"
 sScriptPath = WScript.ScriptFullName
 sScriptDir = Left(sScriptPath, InStrRev(sScriptPath, WScript.ScriptName) - 2)
+sZdLocalConfigFile = sScriptDir & "\..\conf\localconfig.xml"
 sZdLogFile = sScriptDir & "\..\log\zdesktop.log"
 sZdOutFile = sScriptDir & "\..\log\wrapper.log"
 sZdAnchorFile = sScriptDir & "\..\log\zdesktop.pid"
@@ -241,6 +246,4 @@ If oArgs.Item(0) = "start" Then
     StartServer()
 ElseIf oArgs.Item(0) = "stop" Then
     StopServer()
-Else
-    Shutdown()
 End If

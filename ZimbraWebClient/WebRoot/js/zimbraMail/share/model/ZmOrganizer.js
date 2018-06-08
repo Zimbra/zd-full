@@ -752,7 +752,7 @@ ZmOrganizer.prototype.getRestUrl =
 function() {
 	var restUrl = appCtxt.get(ZmSetting.REST_URL);
 	if (restUrl) {
-		var path = AjxStringUtil.urlEncode(this.getSearchPath()).replace("#","%23"); // User may type in a # in a folder name, but that's not ok for our urls
+		var path = AjxStringUtil.urlEncode(this.getSearchPath()).replace("#","%23").replace(/'/g, "%27"); // User may type in a # in a folder name, but that's not ok for our urls
 		// return REST URL as seen by the GetInfoResponse
 		return ([restUrl, "/", path].join(""));
 	}
@@ -777,7 +777,7 @@ function() {
 ZmOrganizer.prototype.getOwnerRestUrl =
 function(){
   var restUrl=this.restUrl;
-  var path = AjxStringUtil.urlEncode(this.oname).replace("#","%23");
+  var path = AjxStringUtil.urlEncode(this.oname).replace("#","%23").replace(/'/g, "%27");
 
   // return REST URL as seen by the GetInfoResponse
   return ([restUrl, "/", path].join(""));
@@ -786,18 +786,21 @@ function(){
 ZmOrganizer.prototype._generateRestUrl =
 function() {
 	var loc = document.location;
-	var uname = appCtxt.get(ZmSetting.USERNAME);
-	var host = loc.host;
+    //Get the user name to whom calendar item belongs.
+    var uname = this.parent.account.name;
+    if (!uname) {
+        appCtxt.get(ZmSetting.USERNAME);
+    }
 	var m = uname.match(/^(.*)@(.*)$/);
 
-	host = (m && m[2]) || host;
+	var host =  loc.host || (m && m[2]);
 
 	// REVISIT: What about port? For now assume other host uses same port
-	if (loc.port && loc.port != 80) {
+	if (host.indexOf(":") == -1 && loc.port && loc.port != 80) {
 		host = host + ":" + loc.port;
 	}
 
-	var path = AjxStringUtil.urlEncode(this.getSearchPath()).replace("#","%23"); // User may type in a # in a folder name, but that's not ok for our urls
+	var path = AjxStringUtil.urlEncode(this.getSearchPath()).replace("#","%23").replace(/'/g, "%27"); // User may type in a # in a folder name, but that's not ok for our urls
 		
 	return [
 		loc.protocol, "//", host, "/service/user/", uname, "/",	path

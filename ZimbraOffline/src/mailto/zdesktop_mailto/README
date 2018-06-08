@@ -1,0 +1,37 @@
+This solution file contains two projects:
+
+1) ZimbraDesktopHelper
+    - This project will create ZimbraDekstopHelper.exe file, which can be invoked from NWJS
+    - This project will register Zimbra Desktop as default mail client in Windows OS
+    - It makes use of C++ API to accomplish this task
+    - For Windows 10, it will open default settings app, where user needs to select Zimbra Desktop in Mail section
+    - For Windows 8 and 8.1, it will open default settings screen for Zimbra Desktop, user needs to click on select all checkbox and then click on save to apply the changes
+    - For Windows Vista and Windows 7, it will directly set Zimbra Desktop as default mail client and will not show any UI to user
+    - This project expects command line argument to do any processing
+    - /SetAsDefault argument can be passed to set Zimbra Desktop as default mail client
+    - /IsDefault argument can be passed to check if Zimbra Desktop is set as default mail client or not, when using this argument project will write output to standard output which can be read by caller function
+    - This project contains ZimbraDesktopHelper.manifest file which lists supported OSs for this exe, this is required to make sure IsWindows10OrGreater and IsWindows8Point1OrGreater methods of VersionHelpers.h, returns true in windows 10/8.1, if file is not present then it will return false, as indicated in https://msdn.microsoft.com/en-us/library/windows/desktop/dn424972(v=vs.85).aspx
+
+2) ZimbraMapi
+    - This project will create ZimbraMapi.dll file, which is used by Windows OS to handle "Send To Mail Recipient" functionality
+    - This project mainly exposes MAPISendMail function, which is called by System APIs when send to functionality is used by user
+    - MAPISendMail method will get path of the attachment
+    - then it will read registry to get path of Zimbra Desktop executable (HKLM\Software\Clients\Mail\Zimbra Desktop\shell\open\command)
+    - and then it will create instance of Zimbra Desktop and pass the path of attachment
+    - This project contains some more methods like MAPILogon, MAPILogoff to make sure system doesn't fail when accessing these methods from DLL
+    - This dll contains two main methods MapiSendMail and MapiSendMailW
+    - MapiSendMail is ANSI based method, which is used in windows 7 and below
+    - MapiSendMailW is unicode based method, which is used in windows 8 and above
+    - This dll also urlencodes attachment paths before passing it to Zimbra Desktop, so whatever is passed to Zimbra Desktop will be a valid url string
+
+3) ZimbraMapiTest
+    - ZimbraMapi.dll is called by system APIs when "Send to mail recipient" functionality is used
+    - As it is used by system APIs, it is hard to debug code
+    - To help in debugging ZimbraMapi.dll, ZimbraMapiTest project is created
+    - We can test both methods MapiSendMail and MapiSendMailW using this project
+
+
+
+
+- Both ZimbraDesktopHelper and ZimrbaMapi is compiled in win32 and win64 architectures
+- Binaries of both projects are placed in ZimbraOffline/src/installer/extensions/zimbramapi-0.8.zip file, which is used by build system to package it together with MSI for Zimbra Desktop

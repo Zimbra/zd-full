@@ -264,6 +264,6 @@ function() {
 
 	return [
 		loc.protocol, "//", host, "/service/user/", uname, "/",
-		AjxStringUtil.urlEncode(this.getSearchPath(true))
+		AjxStringUtil.urlEncode(this.getSearchPath(true)).replace(/'/g, "%27")
 	].join("");
 };
