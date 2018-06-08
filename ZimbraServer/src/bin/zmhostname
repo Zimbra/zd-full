@@ -1,0 +1,7 @@
+#!/bin/bash
+# 
+# 
+#
+source /opt/zimbra/bin/zmshutil || exit 1
+zmassert -r /opt/zimbra/conf/localconfig.xml
+/opt/zimbra/bin/zmlocalconfig -m nokey zimbra_server_hostname

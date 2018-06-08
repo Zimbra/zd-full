@@ -1,0 +1,41 @@
+#!/bin/bash
+# 
+# 
+# 
+
+source `dirname $0`/../bin/zmshutil || exit 1
+zmsetvars \
+	zimbra_home \
+	zimbra_server_hostname
+
+keyattr="zimbraSshPublicKey"
+
+zmprov="/opt/zimbra/bin/zmprov -m -l"
+
+keyfile="${zimbra_home}/.ssh/zimbra_identity"
+
+mkdir -p ${zimbra_home}/.ssh
+
+if [ ! -d "${zimbra_home}/.ssh" ]; then
+  echo "Unable to create ${zimbra_home}/.ssh."
+  exit 1
+fi
+
+chmod 700 ${zimbra_home}/.ssh
+
+rm -f ${keyfile}
+
+keytype=${1:-dsa}
+
+if [ $keytype != "dsa" -a $keytype != "rsa" ]; then
+	echo "Bad keytype: $keytype"
+	echo ""
+	exit 1
+fi
+
+ssh-keygen -f ${keyfile} -b 1024 -N '' \
+	-t ${keytype} -C ${zimbra_server_hostname}
+
+pubkey=`cat ${keyfile}.pub`
+
+${zmprov} ms ${zimbra_server_hostname} ${keyattr} "${pubkey}"

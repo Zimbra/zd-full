@@ -1,0 +1,101 @@
+/*
+ * 
+ */
+
+/*
+ * Created on 2004. 7. 21.
+ */
+package com.zimbra.cs.redolog.op;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+import com.zimbra.common.service.ServiceException;
+import com.zimbra.cs.mailbox.MailItem;
+import com.zimbra.cs.mailbox.MailItem.TargetConstraint;
+import com.zimbra.cs.mailbox.MailServiceException;
+import com.zimbra.cs.mailbox.Mailbox;
+import com.zimbra.cs.mailbox.MailboxManager;
+import com.zimbra.cs.redolog.RedoLogInput;
+import com.zimbra.cs.redolog.RedoLogOutput;
+
+public class DeleteItem extends RedoableOp {
+
+    private int[] mIds;
+    private byte mType;
+    private String mConstraint;
+
+    public DeleteItem() {
+        mType = MailItem.TYPE_UNKNOWN;
+        mConstraint = null;
+    }
+
+    public DeleteItem(int mailboxId, int[] ids, byte type, TargetConstraint tcon) {
+        setMailboxId(mailboxId);
+        mIds = ids;
+        mType = type;
+        mConstraint = (tcon == null ? null : tcon.toString());
+    }
+
+    @Override public int getOpCode() {
+        return OP_DELETE_ITEM;
+    }
+
+    @Override protected String getPrintableData() {
+        StringBuffer sb = new StringBuffer("ids=");
+        sb.append(Arrays.toString(mIds)).append(", type=").append(mType);
+        if (mConstraint != null)
+            sb.append(", constraint=").append(mConstraint);
+        return sb.toString();
+    }
+
+    @Override protected void serializeData(RedoLogOutput out) throws IOException {
+        out.writeInt(-1);
+        out.writeByte(mType);
+        boolean hasConstraint = mConstraint != null;
+        out.writeBoolean(hasConstraint);
+        if (hasConstraint)
+            out.writeUTF(mConstraint);
+        out.writeInt(mIds.length);
+        for (int id : mIds)
+            out.writeInt(id);
+    }
+
+    @Override protected void deserializeData(RedoLogInput in) throws IOException {
+        int id = in.readInt();
+        if (id > 0)
+            mIds = new int[] { id };
+        mType = in.readByte();
+        if (in.readBoolean())
+            mConstraint = in.readUTF();
+        if (id <= 0) {
+            mIds = new int[in.readInt()];
+            for (int i = 0; i < mIds.length; i++)
+                mIds[i] = in.readInt();
+        }
+    }
+
+    @Override public void redo() throws Exception {
+        int mboxId = getMailboxId();
+        Mailbox mbox = MailboxManager.getInstance().getMailboxById(mboxId);
+
+        TargetConstraint tcon = null;
+        if (mConstraint != null)
+            try {
+                tcon = TargetConstraint.parseConstraint(mbox, mConstraint);
+            } catch (ServiceException e) {
+                mLog.warn(e);
+            }
+
+            try {
+                mbox.delete(getOperationContext(), mIds, mType, tcon);
+            } catch (MailServiceException.NoSuchItemException e) {
+                if (mLog.isInfoEnabled())
+                    mLog.info("Some of the items being deleted were already deleted from mailbox " + mboxId);
+            }
+    }
+
+    @Override public boolean isDeleteOp() {
+        return true;
+    }
+}

@@ -1,0 +1,54 @@
+<project name="ZimbraOfflineExt" default="jar">
+	
+	<!-- Properties   JJ -->
+	
+	<property name="jar.file" value="zdext.jar" />
+	<property name="src.java.dir" location="src/java" />
+	<property name="build.dir" location="build" />
+	<property name="build.classes.dir" location="${build.dir}/classes" />
+	<property name="common.dir" location="../ZimbraCommon" />
+	<property name="common.classes.dir" location="${common.dir}/build/classes" />
+        <property name="zsync.common.dir" location="../ZimbraSyncCommon" />
+        <property name="zsync.common.build.dir" location="${zsync.common.dir}/build" />
+        <property name="zsync.common.classes.dir" location="${zsync.common.build.dir}/classes" />
+        <property name="server.classes.dir" location="../ZimbraServer/build/classes" />
+        <property name="offline.classes.dir" location="../ZimbraOffline/build/classes" />
+        <property name="zsyncclient.classes.dir" location="../ZimbraSyncClient/build/classes" />
+
+	<path id="all.java.path">
+		<pathelement location="${src.java.dir}" />
+	</path>
+
+	<path id="class.path">
+		<pathelement location="${build.classes.dir}" />
+		<pathelement location="${common.classes.dir}" />
+                <pathelement location="${zsync.common.classes.dir}" />
+                <pathelement location="${server.classes.dir}" />
+                <pathelement location="${offline.classes.dir}" />
+                <pathelement location="${zsyncclient.classes.dir}" />
+                <fileset dir="../ZimbraCommon/jars">
+                        <include name="**/*.jar" />
+                </fileset>
+	</path>
+
+	<!-- Targets JJ -->
+	<target name="build-init">
+		<mkdir dir="${build.classes.dir}" />
+	</target>
+
+	<target name="compile" depends="build-init" description="Compiles the source code">
+		<ant dir="${common.dir}" target="jar" inheritAll="false" />
+		<javac destdir="${build.classes.dir}" debug="true" classpathref="class.path" target="1.6">
+			<src refid="all.java.path" />
+		</javac>
+	</target>
+
+	<target name="jar" depends="compile" description="Creates the jar file">
+		<jar manifest="conf/MANIFEST.MF" destfile="${build.dir}/${jar.file}" basedir="${build.classes.dir}" />
+	</target>
+
+	<target name="clean" description="Removes build files and undeploys extension">
+		<delete dir="${build.dir}" />
+	</target>
+	
+</project>

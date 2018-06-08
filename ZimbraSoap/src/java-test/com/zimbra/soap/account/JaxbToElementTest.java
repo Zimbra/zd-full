@@ -1,0 +1,131 @@
+/*
+ * 
+ */
+package com.zimbra.soap.account;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+
+import junit.framework.Assert;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+import com.zimbra.soap.JaxbUtil;
+import com.zimbra.soap.account.message.GetInfoResponse;
+import com.zimbra.common.soap.Element;
+import com.zimbra.common.soap.Element.JSONElement;
+
+/**
+ * Unit test for {@link GetInfoResponse} which exercises
+ * translation to and from Element
+ *
+ * @author Gren Elliot
+ */
+public class JaxbToElementTest {
+    private static final Logger LOG = Logger.getLogger(JaxbToElementTest.class);
+    private static Unmarshaller unmarshaller;
+    // one run with iterationNum = 80000:
+    //     elementToJaxbTest time="30.013" (using w3c dom document)
+    //     elementToJaxbUsingDom4jTest time="41.165"
+    //     elementToJaxbUsingByteArrayTest time="122.265"
+    private static int iterationNum = 2;
+    static GetInfoResponse getInfoResp;
+    static String getInfoResponseXml;
+    static String getInfoResponseJSON;
+    static String getInfoResponseJSONwithEnv;
+    static Element getInfoRespElem;
+
+    static {
+        BasicConfigurator.configure();
+        Logger.getRootLogger().setLevel(Level.INFO);
+        LOG.setLevel(Level.INFO);
+    }
+
+    public static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "utf-8"));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line + "\n");
+        }
+        is.close();
+        return sb.toString();
+    }
+
+    @BeforeClass
+    public static void init() throws Exception {
+        JAXBContext jaxb = JAXBContext.newInstance(GetInfoResponse.class);
+        unmarshaller = jaxb.createUnmarshaller();
+        getInfoResp = (GetInfoResponse) unmarshaller.unmarshal(
+            JaxbToElementTest.class.getResourceAsStream("GetInfoResponse.xml"));
+        InputStream is = JaxbToElementTest.class.getResourceAsStream(
+                "GetInfoResponse.xml");
+        getInfoResponseXml = convertStreamToString(is);
+        is = JaxbToElementTest.class.getResourceAsStream(
+                "GetInfoResponse.json");
+        getInfoResponseJSON = convertStreamToString(is);
+        StringBuffer sb = new StringBuffer();
+        sb.append("{\n\"GetInfoResponse\": ").append(getInfoResponseJSON).append("\n}");
+        getInfoResponseJSONwithEnv = sb.toString();
+        getInfoRespElem = JaxbUtil.jaxbToElement(getInfoResp);
+    }
+
+    @Test
+    public void jaxBToElementTest() throws Exception {
+        for (int cnt = 1; cnt <= iterationNum;cnt++) {
+            Element el = JaxbUtil.jaxbToElement(getInfoResp);
+            String actual = el.prettyPrint();
+            // TODO: At present the order varies a little and zimlets plus
+            //       other things are missing - so just check the first part.
+            Assert.assertEquals(getInfoResponseXml.substring(0, 100),
+                    actual.substring(0, 100));
+        }
+    }
+
+    @Test
+    public void jaxBToJSONElementTest() throws Exception {
+            Element el = JaxbUtil.jaxbToElement(
+                    getInfoResp, JSONElement.mFactory);
+            // el.toString() and el.prettyPrint() don't provide the
+            // name of the element - that only happens when it is a
+            // child of other elements (the "soap" envelop)
+            String actual = el.prettyPrint();
+            Assert.assertEquals("Top level Element name", "GetInfoResponse", el.getName());
+            // The test file has one extra line ending. 
+            Assert.assertEquals(getInfoResponseJSON.substring(0, 27390),
+                    actual);
+    }
+
+    @Test
+    public void elementToJaxbTest() throws Exception {
+        Element el = JaxbUtil.jaxbToElement(getInfoResp);
+        org.w3c.dom.Document doc = el.toW3cDom();
+        if (LOG.isDebugEnabled())
+            LOG.debug("(XML)elementToJaxbTest toW3cDom() Xml:\n" +
+                    JaxbUtil.domToString(doc));
+        for (int cnt = 1; cnt <= iterationNum;cnt++) {
+            getInfoResp = JaxbUtil.elementToJaxb(getInfoRespElem);
+        }
+    }
+
+    @Test
+    public void JSONelementToJaxbTest() throws Exception {
+        Element env = Element.parseJSON(getInfoResponseJSONwithEnv);
+        Element el = env.listElements().get(0);
+        org.w3c.dom.Document doc = el.toW3cDom();
+        if (LOG.isDebugEnabled())
+            LOG.debug("JSONelementToJaxbTest toW3cDom Xml:\n" +
+                    JaxbUtil.domToString(doc));
+        getInfoResp = JaxbUtil.elementToJaxb(el);
+        Assert.assertEquals("Account name", "user1@ysasaki.local",
+             getInfoResp.getAccountName());
+    }
+
+}

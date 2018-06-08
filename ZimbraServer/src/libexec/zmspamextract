@@ -1,0 +1,6 @@
+#!/bin/bash
+# 
+# 
+# 
+
+exec `dirname $0`/../bin/zmjava com.zimbra.cs.util.SpamExtract "$@"

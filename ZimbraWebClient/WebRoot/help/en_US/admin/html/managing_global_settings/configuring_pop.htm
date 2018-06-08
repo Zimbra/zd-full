@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0014)about:internet -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <meta name="generator" content="Adobe RoboHelp 9" />
+<title>Configuring POP</title>
+<link rel="StyleSheet" href="../default.css" type="text/css" />
+ <script type="text/javascript" language="JavaScript">
+//<![CDATA[
+function reDo() {
+  if (innerWidth != origWidth || innerHeight != origHeight)
+     location.reload();
+}
+if ((parseInt(navigator.appVersion) == 4) && (navigator.appName == "Netscape")) {
+	origWidth = innerWidth;
+	origHeight = innerHeight;
+	onresize = reDo;
+}
+onerror = null; 
+//]]>
+</script>
+<style type="text/css">
+<!--
+div.WebHelpPopupMenu { position:absolute;
+left:0px;
+top:0px;
+z-index:4;
+visibility:hidden; }
+-->
+</style>
+<script type="text/javascript" language="javascript1.2" src="../whmsg.js"></script>
+<script type="text/javascript" language="javascript" src="../whver.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whproxy.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whutils.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whlang.js"></script>
+<script type="text/javascript" language="javascript1.2" src="../whtopic.js"></script>
+
+</head>
+<body><script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.gbWhTopic)
+{
+	var strUrl = document.location.href;
+	var bc = 0;
+	var n = strUrl.toLowerCase().indexOf("bc-");
+	if(n != -1)
+	{
+		document.location.href = strUrl.substring(0, n);
+		bc = strUrl.substring(n+3);
+	}
+
+	if (window.addTocInfo)
+	{
+	addTocInfo("Global Settings\nConfiguring POP");
+addButton("show",BTN_TEXT,"Show TOC","","","","",0,0,"","","");
+
+	}
+	if (window.writeBtnStyle)
+		writeBtnStyle();
+
+	if (window.writeIntopicBar)
+		writeIntopicBar(1);
+
+	
+	
+
+	if (window.setRelStartPage)
+	{
+	setRelStartPage("../administration_console_help.htm");
+
+		autoSync(1);
+		sendSyncInfo();
+		sendAveInfoOut();
+	}
+}
+else
+	if (window.gbIE4)
+		document.location.reload();
+
+//-->
+//]]></script>
+<p>&#160;</p>
+
+<h1>Configuring POP</h1>
+<p>You can enable the POP3 service and set the following from the Global Settings, POP tab. You can also enable the POP service from a Server's POP tab. The server settings overrule the global settings.</p>
+<p>&#160;</p>
+<table style="vertical-align: Top; border-top-style: Solid; border-bottom-style: Solid; border-top-width: 4px; border-bottom-width: 4px;" cellspacing="0" width="80%">
+<col style="width: 34.164%;" />
+<col style="width: 65.836%;" />
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p style="font-weight: bold;">Enable POP3 &#160;service</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p>Allows POP connection to the Zimbra servers.</p>
+</td>
+</tr>
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p style="font-weight: bold;">Enable SSL for POP service</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p>Enables encrypted connections. &#160;(HTTPS)</p>
+</td>
+</tr>
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p style="font-weight: bold;">Enable clear text login</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p>Enables connections that are not encrypted. &#160;(HTTP)</p>
+</td>
+</tr>
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p style="font-weight: bold;">POP3 port number</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p>The default port number for HTTP connections is 110. If you use IMAP/POP proxy, the port number is 7110.</p>
+</td>
+</tr>
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p style="font-weight: bold;">POP3 SSL port number</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p>The default port number for HTTPS connections is 995. If you use IMAP/POP proxy, the port number is 7995.</p>
+</td>
+</tr>
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p style="font-weight: bold;">POP3 proxy port number</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p>This is configured if IMAP/POP proxy is set up. The required port number is 110.</p>
+</td>
+</tr>
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p style="font-weight: bold;">POP3 SSL proxy port number</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p>This is configured if IMAP/POP proxy is set up. The required port number is 995.</p>
+</td>
+</tr>
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p style="font-weight: bold;">Number of threads</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px; border-bottom-width: 2px; border-bottom-style: Solid;">
+<p>Number of threads that should be available. The global setting is not set. The server default setting is 100.</p>
+</td>
+</tr>
+</table>
+<p>&#160;</p>
+<p>The following additional POP information can be configured.</p>
+<table style="vertical-align: Top; border-top-style: Solid; border-bottom-style: Solid; border-top-width: 4px; border-bottom-width: 4px;" cellspacing="0" width="80%">
+<col style="width: 34.164%;" />
+<col style="width: 65.836%;" />
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px;">
+<p style="font-weight: bold;">Address</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px;">
+<p>The local IP address the POP service should bind to.</p>
+</td>
+</tr>
+<tr style="vertical-align: center;">
+<td style="width: 34.164%; padding-right: 10px; padding-left: 10px;">
+<p style="font-weight: bold;">Advertised name</p>
+</td>
+<td style="width: 65.836%; padding-right: 10px; padding-left: 10px;">
+<p>The name to identify the server when a POP client connects. &#160;The default is the local server name.</p>
+</td>
+</tr>
+</table>
+<p>&#160;</p>
+<hr style="color: #000000; background-color: #000000;" size="1" width="50%" 
+	 align="left" />
+<p>Copyright © 2012 
+ VMware, Inc. All rights reserved.</p>
+<script type="text/javascript" language="javascript1.2">//<![CDATA[
+<!--
+if (window.writeIntopicBar)
+	writeIntopicBar(0);
+
+
+highlightSearch();
+//-->
+//]]></script>
+</body>
+</html>

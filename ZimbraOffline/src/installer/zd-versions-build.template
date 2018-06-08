@@ -1,0 +1,62 @@
+ array (
+        "macos"=>array (//platform
+          "shortversion"=>"@version@",
+          "version"=>"@version@_@channel@",
+          "buildnum"=>@buildid@,
+          "description"=>" ",
+          "platform"=>"MACOSXx86",
+          "buildtype"=>"@buildtype@",
+          "download_url_prefix"=> "@download_prefix@",
+          "details_url"=>"@details@",
+          "license_url"=>"@license@",
+		  "size"=> @size_macos@,
+		  "hash"=> "@hash_macos@",
+          "file_media" => "@media_macos@",
+          "extension_version" => "@extver@"
+        ),
+        "win32"=>array (//platform
+          "shortversion"=>"@version@",
+          "version"=>"@version@_@channel@",
+          "buildnum"=>@buildid@,
+          "description"=>" ",
+          "platform"=>"WIN32",
+          "buildtype"=>"@buildtype@",
+          "download_url_prefix"=> "@download_prefix@",
+          "details_url"=>"@details@",
+          "license_url"=>"@license@",
+          "size"=> @size_win32@,
+          "hash"=> "@hash_win32@",
+          "file_media" => "@media_win32@",
+          "extension_version" => "@extver@"
+        ),
+	"win64"=>array (//platform
+          "shortversion"=>"@version@",
+          "version"=>"@version@_@channel@",
+          "buildnum"=>@buildid@,
+          "description"=>" ",
+          "platform"=>"WIN64",
+          "buildtype"=>"@buildtype@",
+          "download_url_prefix"=> "@download_prefix@",
+          "details_url"=>"@details@",
+          "license_url"=>"@license@",
+          "size"=> @size_win64@,
+          "hash"=> "@hash_win64@",
+          "file_media" => "@media_win64@",
+          "extension_version" => "@extver@"
+        ),
+        "linux"=>array (//platform
+          "shortversion"=>"@version@",
+          "version"=>"@version@_@channel@",
+          "buildnum"=>@buildid@,
+          "description"=>" ",
+          "platform"=>"LINUX",
+          "buildtype"=>"@buildtype@",
+          "download_url_prefix"=> "@download_prefix@",
+          "details_url"=>"@details@",
+          "license_url"=>"@license@",
+          "size"=> @size_linux@,
+          "hash"=> "@hash_linux@",
+          "file_media" => "@media_linux@",
+          "extension_version" => "@extver@"
+        )
+      )

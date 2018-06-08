@@ -1,0 +1,5 @@
+override chrome://mozapps/locale/downloads/settingsChange.dtd chrome://browser/locale/downloads/settingsChange.dtd
+locale newapp en-US en-US/
+locale browser en-US en-US/
+locale webrunner en-US en-US/
+override chrome://global/locale/netErrorApp.dtd chrome://webrunner/locale/netError.dtd

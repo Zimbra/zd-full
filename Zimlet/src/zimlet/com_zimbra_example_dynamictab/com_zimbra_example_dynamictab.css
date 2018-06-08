@@ -1,0 +1,27 @@
+/*
+ * 
+ */
+
+
+/*
+ *	Edit Tabs dialog
+ */
+ 
+.com_zimbra_example_dynamictab_EditTabsDialog-removeLink {
+	color: blue;
+	text-decoration: underline;
+}
+
+.com_zimbra_example_dynamictab_EditTabsDialog-dialogContainer {
+	-moz-border-bottom-colors:#A7A194 #D7CFBE;
+	-moz-border-left-colors:#6B675F #B3AD9F;
+	-moz-border-radius-bottomleft:3px;
+	-moz-border-radius-bottomright:3px;
+	-moz-border-radius-topleft:3px;
+	-moz-border-radius-topright:3px;
+	-moz-border-right-colors:#A7A194 #D7CFBE;
+	-moz-border-top-colors:#6B675F #B3AD9F;
+	background-color:#F7F3E9;
+	border:2px solid;
+	padding:4px;
+}

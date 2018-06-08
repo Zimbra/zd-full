@@ -1,0 +1,82 @@
+/*
+ * 
+ */
+
+/****
+ *	PURPOSE:  This file is loaded in for the message body (only) of each message displayed
+ *				in the 'Message Preview Pane'.  It should be minimal in size.
+ ****/
+
+.MsgHeaderTable .Object,
+.MsgHeaderTable .Object-hover {
+	white-space: nowrap;
+	@ActiveCursor@
+}
+
+/* entire message body */
+.MsgBody {
+	@MailMsgBody@
+}
+
+/* text message font (eg: not HTML) */
+.MsgBody-text {
+	@MailMsgBodyText@
+	@MailMsgBodyText-fixed@
+}
+
+.MsgBody-text, .MsgBody-html {
+	padding: 10px;
+}
+
+.MsgBody .SignatureText { color: gray; }
+.MsgBody .QuotedText0 { color: purple; }
+.MsgBody .QuotedText1 { color: green; }
+.MsgBody .QuotedText2 { color: red; }
+
+
+.Object {
+	@Anchor@
+}
+
+.Object-hover {
+	@Anchor-hover@
+}
+
+.Object-active {
+	@Anchor-active@
+}
+
+
+.FakeAnchor, a:link, a:visited {
+	@Anchor@
+}
+
+a:hover {
+	@Anchor-hover@
+}
+
+a:active {
+	@Anchor-active@
+}
+
+.POObject {color: blue;}
+.POObjectApproved {color: green;}
+.POObjectRejected {color: red;}
+
+.zimbraHide {
+	display: none;
+}
+
+.MsgBody-html pre, .MsgBody-html pre * {
+	@WordWrapPRE@
+}
+
+.MsgBody-html tt, .MsgBody-html tt * {
+	@FontFamily-fixed@
+	@WordWrapPRE@
+}
+
+/* Search Highlighter Zimlet Styles */
+.ZmSearchResult {   
+    background-color:@SearchResultColor@;
+}

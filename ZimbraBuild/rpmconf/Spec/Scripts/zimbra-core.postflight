@@ -1,0 +1,39 @@
+#!/bin/bash
+# 
+# 
+# 
+
+mkdir -p /opt/zimbra/log
+chown zimbra:zimbra /opt/zimbra/log
+
+mkdir -p /opt/zimbra/ssl
+chown zimbra:zimbra /opt/zimbra/ssl
+mkdir -p /opt/zimbra/.ssh
+chown zimbra:zimbra /opt/zimbra/.ssh
+
+rm -f /opt/zimbra/java
+ln -s /Library/Java/Home /opt/zimbra/java
+
+mkdir -p /opt/zimbra/zmstat/pid
+chown zimbra:zimbra /opt/zimbra/zmstat
+chown zimbra:zimbra /opt/zimbra/zmstat/pid
+
+# Bug 6645
+PLAT=`/opt/zimbra/libexec/get_plat_tag.sh`
+
+if [ -x "/opt/zimbra/libexec/zmfixperms" ]; then
+  /opt/zimbra/libexec/zmfixperms
+fi
+
+
+if [ -d /Users/zimbra ]; then
+  rm -rf /Users/zimbra
+  ln -s /opt/zimbra /Users/zimbra
+fi
+
+D=$(date +%s)
+echo "${D}: INSTALL SESSION COMPLETE" >> /opt/zimbra/.install_history
+
+# Fix dspam.conf dylib/so for mac
+sed -i .bak -e 's/\.so$/.dylib/' /opt/zimbra/conf/dspam.conf
+

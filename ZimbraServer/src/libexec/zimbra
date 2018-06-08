@@ -1,0 +1,61 @@
+#!/bin/bash
+# 
+# 
+# 
+#
+# Init file for zimbra mail
+#
+# chkconfig: 345 99 01
+# description: Zimbra mail service
+#
+### BEGIN INIT INFO
+# Provides:       zimbra
+# Required-Start: $network $remote_fs $syslog $time nscd cron
+# Required-Stop:  $network $remote_fs $syslog $time
+# Default-Start:  3 5
+# Description:    Zimbra mail service
+### END INIT INFO
+
+
+command()
+{
+	if [ -f /opt/zimbra/redolog/redo.log ]; then
+		chown -f zimbra:zimbra /opt/zimbra/redolog/redo.log
+	fi
+	# su - zimbra -c "zmcontrol $1 </dev/null >>/opt/zimbra/log/startup.log 2>&1"
+	# bug 45842
+	su - zimbra -c "zmcontrol $1 </dev/null"
+}
+
+case "$1" in
+	restart)
+		command shutdown
+		command startup
+		RETVAL=$?
+    if [ -d /var/lock/subsys -a $RETVAL -eq 0 ]; then
+      touch /var/lock/subsys/zimbra
+    fi
+		;;
+	start)
+		command startup
+		RETVAL=$?
+    if [ -d /var/lock/subsys -a $RETVAL -eq 0 ]; then
+      touch /var/lock/subsys/zimbra
+    fi
+		;;
+	stop)
+		command shutdown
+		RETVAL=$?
+    if [ -d /var/lock/subsys -a $RETVAL -eq 0 ]; then
+      rm -f /var/lock/subsys/zimbra
+    fi
+		;;
+	reload|status)
+		command $1
+		RETVAL=$?
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|reload|status}"
+		RETVAL=1
+esac
+exit $RETVAL

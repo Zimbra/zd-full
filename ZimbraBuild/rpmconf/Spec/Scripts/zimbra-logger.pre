@@ -1,0 +1,29 @@
+#!/bin/bash
+# 
+# 
+# 
+
+# Create group, user for zimbra and postfix.
+egrep -q '^zimbra:' /etc/group
+if [ $? != 0 ]; then
+	groupadd zimbra
+fi
+
+egrep -q '^postfix:' /etc/group
+if [ $? != 0 ]; then
+	groupadd postfix
+fi
+
+egrep -q '^zimbra:' /etc/passwd
+if [ $? != 0 ]; then
+	useradd -g zimbra -G postfix,tty -d /opt/zimbra -s /bin/bash zimbra
+fi
+
+# Fix incase the account existed but the groups were wrong
+# add adm for mandriva so logger can read the log files
+egrep -q '^adm:' /etc/group
+if [ $? = 0 ]; then
+  usermod -g zimbra -G postfix,tty,adm zimbra
+else 
+  usermod -g zimbra -G postfix,tty zimbra
+fi

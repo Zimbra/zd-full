@@ -1,0 +1,113 @@
+#!/usr/bin/perl
+# 
+# 
+# 
+use strict;
+use lib '/opt/zimbra/zimbramon/lib';
+use Net::LDAP;
+use XML::Simple;
+use Getopt::Std;
+
+my %options;
+
+getopts('de',\%options) or die "Unable to set options\n";
+
+if ( ! -d "/opt/zimbra/openldap/etc" ) {
+  print "ERROR: openldap does not appear to be installed - exiting\n";
+  exit(1);
+}
+
+my $id = getpwuid($<);
+chomp $id;
+if ($id ne "zimbra") {
+    print STDERR "Error: must be run as zimbra user\n";
+	usage();
+    exit (1);
+}
+
+if ( $options{d} + $options{e} > 1) {
+    print "Only one of enable or disable may be specified.\n";
+	usage();
+    exit (1);
+}
+
+if ( $options{d} + $options{e} <= 0) {
+    print "One of enable or disable must be specified.\n";
+	usage();
+	exit (1);
+}
+
+my $localxml = XMLin("/opt/zimbra/conf/localconfig.xml");
+my $ldap_root_password = $localxml->{key}->{ldap_root_password}->{value};
+chomp($ldap_root_password);
+my $ldap_is_master = $localxml->{key}->{ldap_is_master}->{value};
+chomp($ldap_is_master);
+
+my @acls;
+
+if($options{d}) {
+@acls=(
+  '{3}to attrs=objectclass  by dn.children="cn=admins,cn=zimbra" write  by dn.base="uid=zmpostfix,cn=appaccts,cn=zimbra" read  by dn.base="uid=zmamavis,cn=appaccts,cn=zimbra" read  by users read  by * none',
+  '{7}to filter="(!(zimbraHideInGal=TRUE))"  attrs=cn,co,company,dc,displayName,givenName,gn,initials,l,mail,o,ou,physicalDeliveryOfficeName,postalCode,sn,st,street,streetAddress,telephoneNumber,title,uid,homePhone,pager,mobile,userCertificate  by dn.children="cn=admins,cn=zimbra" write  by dn.base="uid=zmpostfix,cn=appaccts,cn=zimbra" read  by users read  by * none',
+  '{8}to attrs=zimbraId,zimbraMailAddress,zimbraMailAlias,zimbraMailCanonicalAddress,zimbraMailCatchAllAddress,zimbraMailCatchAllCanonicalAddress,zimbraMailCatchAllForwardingAddress,zimbraMailDeliveryAddress,zimbraMailForwardingAddress,zimbraPrefMailForwardingAddress,zimbraMailHost,zimbraMailStatus,zimbraMailTransport,zimbraDomainName,zimbraDomainType,zimbraPrefMailLocalDeliveryDisabled  by dn.children="cn=admins,cn=zimbra" write  by dn.base="uid=zmpostfix,cn=appaccts,cn=zimbra" read  by dn.base="uid=zmamavis,cn=appaccts,cn=zimbra" read  by * none',
+);
+}
+
+if ($options{e}) {
+@acls=(
+  '{3}to attrs=objectclass  by dn.children="cn=admins,cn=zimbra" write  by dn.base="uid=zmpostfix,cn=appaccts,cn=zimbra" read  by dn.base="uid=zmamavis,cn=appaccts,cn=zimbra" read  by * read',
+  '{7}to filter="(!(zimbraHideInGal=TRUE))"  attrs=cn,co,company,dc,displayName,givenName,gn,initials,l,mail,o,ou,physicalDeliveryOfficeName,postalCode,sn,st,street,streetAddress,telephoneNumber,title,uid,homePhone,pager,mobile,userCertificate  by dn.children="cn=admins,cn=zimbra" write  by dn.base="uid=zmpostfix,cn=appaccts,cn=zimbra" read  by * read',
+  '{8}to attrs=zimbraId,zimbraMailAddress,zimbraMailAlias,zimbraMailCanonicalAddress,zimbraMailCatchAllAddress,zimbraMailCatchAllCanonicalAddress,zimbraMailCatchAllForwardingAddress,zimbraMailDeliveryAddress,zimbraMailForwardingAddress,zimbraPrefMailForwardingAddress,zimbraMailHost,zimbraMailStatus,zimbraMailTransport,zimbraDomainName,zimbraDomainType,zimbraPrefMailLocalDeliveryDisabled  by dn.children="cn=admins,cn=zimbra" write  by dn.base="uid=zmpostfix,cn=appaccts,cn=zimbra" read  by dn.base="uid=zmamavis,cn=appaccts,cn=zimbra" read  by * read',
+);
+}
+
+my $ldap = Net::LDAP->new('ldapi://%2fopt%2fzimbra%2fopenldap%2fvar%2frun%2fldapi/') or die "$@";
+
+my $mesg = $ldap->bind("cn=config", password=>"$ldap_root_password");
+
+$mesg->code && die "Bind: ". $mesg->error . "\n"; 
+
+my $dn="olcDatabase={2}hdb,cn=config";
+
+if(lc($ldap_is_master) eq "true") {
+  $mesg = $ldap->search(
+                        base=> "cn=accesslog",
+                        filter=>"(objectClass=*)",
+                        scope => "base",
+                        attrs => ['1.1'],
+                 );
+  my $size = $mesg->count;
+  if ($size > 0 ) {
+    $dn="olcDatabase={3}hdb,cn=config";
+  }
+}
+
+$mesg = $ldap->modify(
+    $dn,
+    delete => {olcAccess => '{3}'},
+    );
+$mesg = $ldap->modify(
+    $dn,
+	add =>{olcAccess=>"$acls[0]"},
+    );
+$mesg = $ldap->modify(
+    $dn,
+    delete => {olcAccess => '{7}'},
+    );
+$mesg = $ldap->modify(
+    $dn,
+    add => {olcAccess => "$acls[1]"},
+    );
+$mesg = $ldap->modify(
+    $dn,
+    delete => {olcAccess => '{8}'},
+    );
+$mesg = $ldap->modify(
+    $dn,
+	add =>{olcAccess=>"$acls[2]"},
+    );
+$ldap->unbind;
+
+sub usage() {
+  print "Usage: $0 [-d] [-e]\n";
+}

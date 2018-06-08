@@ -1,0 +1,113 @@
+dn: olcDatabase={2}hdb
+objectClass: olcDatabaseConfig
+objectClass: olcHdbConfig
+olcDatabase: {2}hdb
+olcSuffix:
+olcAccess: {0}to attrs=userPassword  by anonymous auth  by dn.children="cn=adm
+ ins,cn=zimbra" write
+olcAccess: {1}to dn.subtree="cn=zimbra"  by dn.children="cn=admins,cn=zimbra" 
+ write
+olcAccess: {2}to attrs=zimbraZimletUserProperties,zimbraGalLdapBindPassword,zi
+ mbraGalLdapBindDn,zimbraAuthTokenKey,zimbraPreAuthKey,zimbraPasswordHistory,z
+ imbraIsAdminAccount,zimbraAuthLdapSearchBindPassword  by dn.children="cn=admi
+ ns,cn=zimbra" write  by * none
+olcAccess: {3}to attrs=objectclass  by dn.children="cn=admins,cn=zimbra" write
+   by dn.base="uid=zmpostfix,cn=appaccts,cn=zimbra" read  by dn.base="uid=zmam
+ avis,cn=appaccts,cn=zimbra" read  by users read  by * none
+olcAccess: {4}to attrs=@amavisAccount  by dn.children="cn=admins,cn=zimbra" wr
+ ite  by dn.base="uid=zmamavis,cn=appaccts,cn=zimbra" read  by * +0 break
+olcAccess: {5}to attrs=mail  by dn.children="cn=admins,cn=zimbra" write  by dn
+ .base="uid=zmamavis,cn=appaccts,cn=zimbra" read  by * +0 break
+olcAccess: {6}to attrs=zimbraAllowFromAddress  by dn.children="cn=admins,cn=zi
+ mbra" write  by dn.base="uid=zmpostfix,cn=appaccts,cn=zimbra" read  by * none
+olcAccess: {7}to filter="(!(zimbraHideInGal=TRUE))"  attrs=cn,co,company,dc,di
+ splayName,givenName,gn,initials,l,mail,o,ou,physicalDeliveryOfficeName,postal
+ Code,sn,st,street,streetAddress,telephoneNumber,title,uid,homePhone,pager,mob
+ ile,userCertificate  by dn.children="cn=admins,cn=zimbra" write  by dn.base="
+ uid=zmpostfix,cn=appaccts,cn=zimbra" read  by users read  by * none
+olcAccess: {8}to attrs=zimbraId,zimbraMailAddress,zimbraMailAlias,zimbraMailCa
+ nonicalAddress,zimbraMailCatchAllAddress,zimbraMailCatchAllCanonicalAddress,z
+ imbraMailCatchAllForwardingAddress,zimbraMailDeliveryAddress,zimbraMailForwar
+ dingAddress,zimbraPrefMailForwardingAddress,zimbraMailHost,zimbraMailStatus,z
+ imbraMailTransport,zimbraDomainName,zimbraDomainType,zimbraPrefMailLocalDeliv
+ eryDisabled  by dn.children="cn=admins,cn=zimbra" write  by dn.base="uid=zmpo
+ stfix,cn=appaccts,cn=zimbra" read  by dn.base="uid=zmamavis,cn=appaccts,cn=zi
+ mbra" read  by * none
+olcAccess: {9}to attrs=entry  by dn.children="cn=admins,cn=zimbra" write  by *
+  read
+olcLastMod: TRUE
+olcMaxDerefDepth: 15
+olcReadOnly: FALSE
+olcRootDN: cn=config
+olcSizeLimit: unlimited
+olcTimeLimit: unlimited
+olcMonitoring: TRUE
+olcDbDirectory: /opt/zimbra/data/ldap/hdb/db
+olcDbCacheSize: 10000
+olcDbCheckpoint: 64 5
+olcDbConfig: {0}#
+olcDbConfig: {1}# Set the database in memory cache size.
+olcDbConfig: {2}#
+olcDbConfig: {3}set_cachesize   0       52428800        0
+olcDbConfig: {4}
+olcDbConfig: {5}#
+olcDbConfig: {6}# Set database flags.
+olcDbConfig: {7}# Automatically remove log files that are no longer needed.
+olcDbConfig: {8}set_log_config DB_LOG_AUTO_REMOVE
+olcDbConfig: {9}
+olcDbConfig: {10}#
+olcDbConfig: {11}# Set log values.
+olcDbConfig: {12}#
+olcDbConfig: {13}set_lg_regionmax        262144
+olcDbConfig: {14}set_lg_max              10485760
+olcDbConfig: {15}set_lg_bsize            2097152
+olcDbConfig: {16}set_lg_dir              /opt/zimbra/data/ldap/hdb/logs
+olcDbConfig: {17}# Increase locks
+olcDbConfig:: ezE4fXNldF9sa19tYXhfbG9ja3MJMzAwMA==
+olcDbConfig:: ezE5fXNldF9sa19tYXhfb2JqZWN0cwkxNTAw
+olcDbConfig:: ezIwfXNldF9sa19tYXhfbG9ja2VycwkxNTAw
+olcDbNoSync: FALSE
+olcDbDirtyRead: FALSE
+olcDbIDLcacheSize: 10000
+olcDbIndex: objectClass eq
+olcDbIndex: entryUUID eq
+olcDbIndex: entryCSN eq
+olcDbIndex: cn pres,eq,sub
+olcDbIndex: uid pres,eq
+olcDbIndex: zimbraForeignPrincipal eq
+olcDbIndex: zimbraYahooId eq
+olcDbIndex: zimbraId eq
+olcDbIndex: zimbraVirtualHostname eq
+olcDbIndex: zimbraVirtualIPAddress eq
+olcDbIndex: zimbraMailDeliveryAddress eq,sub
+olcDbIndex: zimbraAuthKerberos5Realm eq
+olcDbIndex: zimbraMailForwardingAddress eq
+olcDbIndex: zimbraMailCatchAllAddress eq,sub
+olcDbIndex: zimbraMailHost eq
+olcDbIndex: zimbraShareInfo sub
+olcDbIndex: zimbraMailTransport eq
+olcDbIndex: zimbraMailAlias eq,sub
+olcDbIndex: zimbraACE sub
+olcDbIndex: zimbraDomainName eq,sub
+olcDbIndex: mail pres,eq,sub
+olcDbIndex: zimbraCalResSite eq,sub
+olcDbIndex: givenName pres,eq,sub
+olcDbIndex: displayName pres,eq,sub
+olcDbIndex: sn pres,eq,sub
+olcDbIndex: zimbraCalResRoom eq,sub
+olcDbIndex: zimbraCalResCapacity eq
+olcDbIndex: zimbraCalResBuilding eq,sub
+olcDbIndex: zimbraCalResFloor eq,sub
+olcDbLinearIndex: FALSE
+olcDbMode: 0600
+olcDbSearchStack: 16
+olcDbShmKey: 0
+olcDbCacheFree: 1
+olcDbDNcacheSize: 0
+structuralObjectClass: olcHdbConfig
+entryUUID: 152ab0a8-333e-102d-8700-d562901af228
+creatorsName: cn=config
+createTimestamp: 20081020215916Z
+entryCSN: 20081020215916.275992Z#000000#000#000000
+modifiersName: cn=config
+modifyTimestamp: 20081020215916Z

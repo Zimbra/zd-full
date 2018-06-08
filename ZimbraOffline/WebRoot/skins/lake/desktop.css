@@ -1,0 +1,21 @@
+/*
+ * 
+ */
+
+/* Offline-specific styles */
+
+BODY {
+	background: #001a37 url("img/bg.gif") repeat-x top left;
+}
+
+.ZPanel {
+	background: #006496 url("img/setup-bkgd-full.gif") no-repeat top left;
+}
+
+.ZTip a {
+	color: #555657;
+}
+
+.ZDot {
+	color: #555657;
+}

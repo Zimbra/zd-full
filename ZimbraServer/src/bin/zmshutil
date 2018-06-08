@@ -1,0 +1,59 @@
+# 
+# 
+# 
+#
+# zmshutil is meant to be sourced by other scripts.  If run
+# it will do nothing.  It will complain if it can't find
+# local config program.
+#
+
+#
+# Find and set local config variables.
+#
+zmsetvars() {
+    if [ "x$1" = "x-f" ]; then
+        shift;
+    else
+        if [ x${zmsetvars} = "xtrue" ]; then
+            return
+        fi
+    fi
+    
+    zmlocalconfig="/opt/zimbra/bin/zmlocalconfig"
+    if [ ! -x "${zmlocalconfig}" ]; then 
+        echo Error: can not find zmlocalconfig program
+        exit 1
+    fi
+    
+    if ! eval `${zmlocalconfig} -q -m export`; then
+        echo Error: executing: ${zmlocalconfig} -q -m export
+        exit 1
+    fi
+    
+    export zmsetvars='true'
+}
+
+#
+# Check if a conditional expression is true.
+#
+zmassert() { 
+    if [ $@ ]; then
+    	return;
+    fi
+    echo Error: assertion "'$@'" failed && exit 1
+}
+
+#
+# Get available system memory in KB.
+#
+zmsysmemkb() {
+    if [ -f /proc/meminfo ]; then
+        memkb=`awk '/^MemTotal.*kB$/ { print $2; }' /proc/meminfo`
+    else
+        memkb=$(/usr/sbin/sysctl hw.memsize 2>/dev/null | awk -F: '{ print $2 / 1024; }');
+    fi
+    if ! echo $memkb | grep '^[0-9]*$' > /dev/null; then
+        memkb=524288
+    fi
+    echo $memkb
+}

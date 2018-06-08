@@ -1,0 +1,90 @@
+#!/bin/bash
+# 
+# 
+# 
+source `dirname $0`/zmshutil || exit 1
+zmsetvars \
+	zimbra_home \
+  postfix_mail_owner \
+  postfix_setgid_group \
+	zimbra_server_hostname 
+
+BASE=${zimbra_home:=/opt/zimbra}
+
+if [ -f "${zimbra_home}/conf/mta_milter_options" ]; then
+  source ${zimbra_home}/conf/mta_milter_options
+fi
+zimbraMilterServerEnabled=${zimbraMilterServerEnabled:=FALSE}
+
+if [ x"$zimbraMilterServerEnabled" = "xTRUE" ]; then
+  SCRIPTS="postfix zmsaslauthdctl zmmilterctl"
+else 
+  SCRIPTS="postfix zmsaslauthdctl"
+fi
+
+rewriteconfig() {
+  echo -n "Rewriting configuration files..."
+  if [ -L ${zimbra_home}/postfix ]; then
+    if [ ! -f ${zimbra_home}/postfix/conf/main.cf ]; then
+      touch ${zimbra_home}/postfix/conf/main.cf
+      ${zimbra_home}/bin/postconf -e mail_owner=${postfix_mail_owner} setgid_group=${postfix_setgid_group}
+    fi
+  fi
+  /opt/zimbra/libexec/configrewrite antispam antivirus mta sasl  > /dev/null 2>&1
+  if [ $? = 0 ]; then
+    echo "done."
+  else
+    echo "failed."
+  fi
+}
+
+case "$1" in 
+	start)
+		if [ x$2 = "x" ]; then
+      rewriteconfig
+		fi
+		STATUS=0
+		for i in $SCRIPTS; do
+			/opt/zimbra/bin/$i start norewrite
+			R=$?
+			if [ $R -ne "0" ]; then
+				echo "$i failed to start"
+				STATUS=$R
+			fi
+		done
+		exit $STATUS
+	;;
+	stop)
+		for i in $SCRIPTS; do
+			/opt/zimbra/bin/$i stop
+		done
+	;;
+	reload|restart)
+		if [ x$2 = "x" ]; then
+      rewriteconfig
+		fi
+		for i in $SCRIPTS; do
+      if [ "x$i" = "xpostfix" ]; then
+        /opt/zimbra/bin/$i reload
+      else 
+			  /opt/zimbra/bin/$i $1
+      fi
+		done
+	;;
+	status)
+		STATUS=0
+		for i in $SCRIPTS; do
+			/opt/zimbra/bin/$i status > /dev/null 2>&1
+			R=$?
+			if [ $R -ne "0" ]; then
+				echo "$i is not running"
+				STATUS=$R
+			fi
+		done
+		exit $STATUS
+	;;
+	*)
+		echo "$0 start|stop|restart|reload|status"
+		exit 1
+	;;
+esac

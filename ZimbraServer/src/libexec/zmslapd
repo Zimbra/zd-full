@@ -1,0 +1,9 @@
+#!/bin/bash
+# 
+# 
+# 
+
+ulimit -n 32768
+ulimit -c unlimited
+export LD_PRELOAD=/opt/zimbra/tcmalloc/lib/libtcmalloc_minimal.so
+exec /opt/zimbra/openldap/sbin/slapd "$@"

@@ -1,0 +1,463 @@
+<project name="Offline-Installer" default="default">
+<!--
+ * 
+-->
+
+	<property file="build.properties"/>
+	<property name="prod_title" value="Zimbra Desktop"/>
+        <tstamp>
+          <format property="current.time" pattern="yyyyMMddhhmmss"/>
+        </tstamp>
+	<property name="media_base" value="zdesktop_${offline.filever}${offline.branch}_b${offline.buildid}"/>
+	<property name="media_win32" value="${media_base}_${current.time}_${offline.suffix_win32}"/>
+	<property name="media_win64" value="${media_base}_${current.time}_${offline.suffix_win64}"/>
+	<property name="media_macos" value="${media_base}_${current.time}_${offline.suffix_macos}"/>
+	<property name="media_linux" value="${media_base}_${current.time}_${offline.suffix_linux}"/>
+	<property name="media_linux_dir" value="zdesktop_${offline.filever}${offline.branch}_b${offline.buildid}_linux_i686"/>
+	<property name="build.dir" location="../ZimbraBuild/i386" />
+	<property name="pmdoc.dir" location="./build/macos_installer.pmdoc" />
+	<property name="wxs.dir" location="${basedir}\build" />
+	<property name="prism.app" value="build/dist/app/macos/prism/Prism.app" />
+	<property name="updater.app" value="build/dist/app/macos/prism/Prism.app/Contents/Frameworks/XUL.framework/updater.app" />
+	<property name="zd.app" value="${basedir}/build/dist/app/macos/Zimbra Desktop.app" />
+	<property name="winperl" value="C:\strawberry\perl\bin\perl.exe" />
+	<property name="wix.home" value="C:\Program Files\Windows Installer XML v3" />
+	<property name="sign.tool" value="C:\signtool\signtool.exe" />
+	<property name="sign.cert" value="C:\signtool\zimbra_code_signing_cert.pfx" />
+	<property name="osx_installer_cert" value="Developer ID Installer: Zimbra, Inc. (WNV9Z362HD)" />
+	<property name="prod_title_temp" value="Zimbra_Desktop_Temp" />
+	<property name="zd.app.new" value="${basedir}/build/dist/app/Zimbra Desktop.app" />
+	<available file="${sign.tool}" type="file" property="has.sign.tool" />
+	<available file="${sign.cert}" type="file" property="has.sign.cert" />
+	<property name ="osx.sign" value="/Users/build/.keypass" />
+	<available file="${osx.sign}" type="file" property="has.osx.sign" />
+
+  	<condition property="is-mac">
+		<os family="mac"/>
+	</condition>
+	<condition property="is-windows">
+		<os family="windows"/>
+	</condition>
+	<condition property="is-linux">
+        <and>
+            <os family="unix"/>
+            <not>
+                <os family="mac"/>
+            </not>
+        </and>
+	</condition>
+	<condition property="sign-installer">
+		<and>
+			<isset property="has.sign.tool" />
+			<isset property="has.sign.cert" />
+		</and>
+	</condition>
+
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="../ZimbraCommon/jars/ant-contrib-1.0b1.jar" />
+		</classpath>
+	</taskdef>
+
+	<target name="installer-clean">
+		<delete> <fileset dir="${build.dir}" includes="zdesktop*"/> </delete>
+	</target>
+
+	<target name="default">
+        <ant dir="." target="offline-make-install-files" inheritAll="false"/>
+       	<mkdir dir="${build.dir}" />
+
+	<if><available file="build/dist/ext/exchange.zip" type="file" /><then>
+		<move tofile="${build.dir}/exchange_${offline.filever}${offline.branch}_b${offline.buildid}.zip" file="build/dist/ext/exchange.zip"/>
+		<delete dir="build/dist/ext"/>
+	</then></if>
+
+    <antcall target="installer-pack-media-mac"/>
+    <antcall target="installer-pack-media-windows"/>
+    <antcall target="installer-pack-media-windows-64"/>
+    <antcall target="installer-pack-media-linux"/>
+
+        <antcall target="gen-update-php"/>
+        <antcall target="symlink-media"/>
+	</target>
+
+	<target name="installer-pack-media-mac" if="is-mac">
+		<!--mkdir dir="${pmdoc.dir}" />
+		<copy todir="${pmdoc.dir}" overwrite="true">
+			<fileset dir="src/installer/macos/macos_installer.pmdoc" />
+		</copy>
+		<replace file="${pmdoc.dir}/index.xml" token="@build.root@" value="${basedir}" />
+		<replace file="${pmdoc.dir}/01app.xml" token="@build.root@" value="${basedir}" /-->
+		<copy todir="build/dist/app/data/bin" file="src/installer/macos/start-zdesktop" overwrite="true" />
+		<copy todir="build/dist/app/data/bin" file="src/installer/macos/stop-zdesktop" overwrite="true" />
+		<chmod dir="build/dist/app/data/bin" includes="*" perm="ugo+rx" />
+
+		<delete dir="build/dist/app/win32" />
+		<delete dir="build/dist/app/win64" />
+		<delete dir="build/dist/app/linux" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.linux" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.win32" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.win64" />
+		<move file="build/dist/app/data/zdesktop.webapp/override.ini.macos" tofile="build/dist/app/data/zdesktop.webapp/override.ini" />
+		<!--if><available file="${updater.app}" type="dir" /><then>
+			<move file="${updater.app}" tofile="${updater.app}_noreloc" preservelastmodified="true" />
+		</then></if>
+		<if><available file="${prism.app}" type="dir" /><then>
+			<move file="${prism.app}" tofile="${prism.app}_noreloc" preservelastmodified="true" />
+		</then></if-->
+		<if><available file="${zd.app}" type="dir" /><then>
+			<move file="${zd.app}" tofile="${zd.app.new}" preservelastmodified="true" />
+		</then></if>
+
+		<!--exec executable="src/installer/macos/pmdoc-get-contents.pl" failonerror="true">
+			<arg value="${basedir}/build/dist/app" />
+			<arg value="${pmdoc.dir}/01app-contents.xml" />
+			<arg value="root" />
+			<arg value="admin" />
+		</exec>
+
+		<exec executable="/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker" failonerror="true">
+			<arg value="-doc" />
+			<arg value="build/macos_installer.pmdoc" />
+			<arg value="-title" />
+			<arg value="${prod_title}" />
+			<arg value="-id" />
+			<arg value="com.zimbra.desktop.full" />
+			<arg value="-verbose" />
+			<arg value="-no-recommend" />
+		</exec>
+
+		<move file="${prod_title}.mpkg" tofile="${build.dir}/${prod_title}.mpkg" preservelastmodified="true" /-->
+
+		<exec executable="/usr/bin/pkgbuild" failonerror="true" >
+			<arg value="--identifier" />
+			<arg value="com.zimbra.desktop.full" />
+			<arg value="--install-location" />
+			<arg value="/Applications/Zimbra Desktop" />
+			<arg value="--root" />
+			<arg value="${basedir}/build/dist/app" />
+			<arg value="--scripts" />
+			<arg value="src/installer/macos" />
+			<arg value="--nopayload" />
+			<arg value="${prod_title_temp}.mpkg" />
+		</exec>
+		<exec executable="/usr/bin/productbuild" failonerror="true" >
+			<arg value="--distribution" />
+			<arg value="Distribution.xml" />
+			<arg value="--resources" />
+			<arg value="src/installer/macos" />
+			<arg value="--sign" />
+			<arg value="${osx_installer_cert}" />
+			<arg value="${build.dir}/${prod_title}.mpkg"/>
+		</exec>
+		<delete file="${prod_title_temp}.mpkg" failonerror="false"/>
+
+		<!--if><isset property="has.osx.sign" /><then>
+			<property file="${osx.sign}" />
+			<exec executable="/usr/bin/security" failonerror="true">
+				<arg value="unlock-keychain" />
+				<arg value="-p" />
+				<arg value="${keychain.pass}" />
+			</exec>
+			<exec executable="/usr/bin/codesign" failonerror="true">
+				<arg value="-force" />
+				<arg value="-verify" />
+				<arg value="-verbose" />
+				<arg value="-sign" />
+				<arg value="Zimbra Software, LLC" />
+				<arg value="${build.dir}/${prod_title}.mpkg/Contents/Packages/app.pkg" />
+			</exec>
+			<exec executable="/usr/bin/codesign" failonerror="true">
+				<arg value="-force" />
+				<arg value="-verify" />
+				<arg value="-verbose" />
+				<arg value="-sign" />
+				<arg value="Zimbra Software, LLC" />
+				<arg value="${build.dir}/${prod_title}.mpkg/Contents/Packages/zimbraDesktopPreflight.pkg" />
+			</exec>
+		</then></if-->
+
+		<exec executable="/usr/bin/hdiutil" failonerror="true">
+			<arg value="create" />
+			<arg value="-srcfolder" />
+			<arg value="${build.dir}/${prod_title}.mpkg" />
+			<arg value="-volname" />
+			<arg value="Zimbra Desktop Installer" />
+			<arg value="-ov" />
+			<arg value="${build.dir}/${media_macos}" />
+			<arg value="-format" />
+			<arg value="UDZO" />
+			<arg value="-imagekey" />
+			<arg value="zlib-level=6" />
+		</exec>
+		<!-- <delete dir="${build.dir}/${prod_title}.mpkg" /> -->
+	</target>
+
+	<macrodef name="sign-binary-file">
+		<attribute name="file"/>
+		<sequential>
+			<if><isset property="sign-installer" /><then>
+				<property file="C:\signtool\zimbra_code_signing.prop" />
+				<exec executable="${sign.tool}" failonerror="true">
+					<arg value="sign" />
+					<arg value="/f" />
+					<arg value="${sign.cert}" />
+					<arg value="/fd" />
+					<arg value="sha256" />
+					<arg value="/p" />
+					<arg value="${signcert.pass}" />
+					<arg value="/t" />
+					<arg value="http://timestamp.digicert.com" />
+					<arg value="@{file}" />
+				</exec>
+			</then></if>
+		</sequential>
+	</macrodef>
+
+	<!-- These open source programs are required for building Windows installer  -->
+	<!--   1) WiX v3.0 (http://wix.sourceforge.net/downloadv3.html) "            -->
+	<!--   2) Strawberry Perl (http://strawberryperl.com/) "                     -->
+
+	<target name="installer-pack-media-windows" if="is-windows">
+		<delete dir="build/dist/app/macos" />
+		<delete dir="build/dist/app/linux" />
+		<copy todir="build/dist/app/data/bin" file="src/installer/win32/zdctl.vbs" overwrite="true" />
+		<copy todir="build/dist/app/data/bin" file="src/installer/win32/zdctl-wrapper.vbs" overwrite="true" />
+		<delete file="build/dist/app/data/bin/zdesktop" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.linux" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.macos" />
+		<move file="build/dist/app/data/zdesktop.webapp/override.ini.win32" tofile="build/dist/app/data/zdesktop.webapp/override.ini" />
+		<sign-binary-file file="build/dist/app/win32/prism/extensions/mapi@zimbra.com/helper.exe" />
+
+		<copy todir="${wxs.dir}" file="src/installer/win32/win_installer.wxs" overwrite="true" />
+		<replace file="${wxs.dir}/win_installer.wxs" token="@build.root@" value="${basedir}" />
+		<replace file="${wxs.dir}/win_installer.wxs" token="@zd.version@" value="${offline.version}.${offline.buildid}"/>
+
+		<move file="build/dist/app/win64" tofile="build/win64" failonerror="false" />
+
+		<exec executable="${winperl}" failonerror="true">
+			<arg value="${basedir}\src\installer\win32\wxs-get-contents.pl" />
+			<arg value="${basedir}" />
+		</exec>
+
+		<exec executable="${wix.home}\bin\candle.exe" failonerror="true">
+			<arg value="-out" />
+			<arg value="${wxs.dir}\win_installer.wixobj" />
+			<arg value="-arch" />
+			<arg value="x86" />
+			<arg value="-ext" />
+			<arg value="${wix.home}\bin\WixUIExtension.dll" />
+			<arg value="${wxs.dir}\win_installer.wxs" />
+		</exec>
+
+		<exec executable="${wix.home}\bin\light.exe" failonerror="true">
+			<arg value="-sval" />
+			<arg value="-cultures:null" />
+			<arg value="-ext" />
+			<arg value="${wix.home}\bin\WixUIExtension.dll" />
+			<arg value="-out" />
+			<arg value="${build.dir}\${media_win32}" />
+			<arg value="${wxs.dir}\win_installer.wixobj" />
+		</exec>
+
+		<sign-binary-file file="${build.dir}\${media_win32}" />
+
+		<move file="build/win64" tofile="build/dist/app/win64" failonerror="false" />
+
+	</target>
+
+	<target name="installer-pack-media-windows-64" if="is-windows">
+		<delete dir="build/dist/app/macos" />
+		<delete dir="build/dist/app/linux" />
+		<copy todir="build/dist/app/data/bin" file="src/installer/winX64/zdctl.vbs" overwrite="true" />
+		<copy todir="build/dist/app/data/bin" file="src/installer/winX64/zdctl-wrapper.vbs" overwrite="true" />
+		<delete file="build/dist/app/data/bin/zdesktop" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.linux" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.macos" />
+		<move file="build/dist/app/data/zdesktop.webapp/override.ini.win64" tofile="build/dist/app/data/zdesktop.webapp/override.ini" />
+		<sign-binary-file file="build/dist/app/win64/prism/extensions/mapi@zimbra.com/helper.exe" />
+		<copy todir="${wxs.dir}" file="src/installer/winX64/win_installer_64.wxs" overwrite="true" />
+		<replace file="${wxs.dir}/win_installer_64.wxs" token="@build.root@" value="${basedir}" />
+		<replace file="${wxs.dir}/win_installer_64.wxs" token="@zd.version@" value="${offline.version}.${offline.buildid}"/>
+
+		<move file="build/dist/app/win32" tofile="build/win32" failonerror="false" />
+
+		<exec executable="${winperl}" failonerror="true">
+			<arg value="${basedir}\src\installer\winX64\wxs-get-contents.pl" />
+			<arg value="${basedir}" />
+		</exec>
+
+		<exec executable="${wix.home}\bin\candle.exe" failonerror="true">
+			<arg value="-out" />
+			<arg value="${wxs.dir}\win_installer_64.wixobj" />
+			<arg value="-arch" />
+			<arg value="x64" />
+			<arg value="-ext" />
+			<arg value="${wix.home}\bin\WixUIExtension.dll" />
+			<arg value="${wxs.dir}\win_installer_64.wxs" />
+		</exec>
+
+		<exec executable="${wix.home}\bin\light.exe" failonerror="true">
+			<arg value="-sval" />
+			<arg value="-cultures:null" />
+			<arg value="-ext" />
+			<arg value="${wix.home}\bin\WixUIExtension.dll" />
+			<arg value="-out" />
+			<arg value="${build.dir}\${media_win64}" />
+			<arg value="${wxs.dir}\win_installer_64.wixobj" />
+		</exec>
+
+		<sign-binary-file file="${build.dir}\${media_win64}" />
+
+		<move file="build/win32" tofile="build/dist/app/win32" failonerror="false" />
+
+	</target>
+
+	<target name="installer-pack-media-linux" if="is-linux">
+		<delete dir="build/dist/app/win32" />
+		<delete dir="build/dist/app/win64" />
+		<delete dir="build/dist/app/macos" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.win32" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.win64" />
+		<delete file="build/dist/app/data/zdesktop.webapp/override.ini.macos" />
+		<move file="build/dist/app/data/zdesktop.webapp/override.ini.linux" tofile="build/dist/app/data/zdesktop.webapp/override.ini" />
+		<replace file="build/dist/app/data/zdesktop.webapp/webapp.ini" token="status=false" value="status=true" />
+		<replace file="build/dist/app/data/zdesktop.webapp/webapp.ini" token="trayicon=true" value="trayicon=false" />
+		<copy todir="build/dist" file="src/installer/linux/install.pl" preservelastmodified="true" overwrite="true" />
+		<chmod file="build/dist/install.pl" perm="ugo+rx" />
+
+		<mkdir dir="build/dist/${media_linux_dir}" />
+		<move todir="build/dist/${media_linux_dir}">
+			<fileset dir="build/dist" excludes="${media_linux_dir}" />
+		</move>
+		<!-- ant's tar task can't preserve permissions. we call gnu tar directly -->
+		<exec executable="/bin/tar" failonerror="true">
+			<arg value="pcvzf" />
+			<arg value="${build.dir}/${media_linux}" />
+			<arg value="-C" />
+			<arg value="build/dist" />
+			<arg value="${media_linux_dir}" />
+		</exec>
+	</target>
+
+	<target name="gen-update-php" depends="gen-filenames">
+		<copy file="src/installer/update.php" todir="${build.dir}" overwrite="true"/>
+        <copy file="src/installer/zd-versions.php" todir="${build.dir}" overwrite="true"/>
+        <copy file="src/installer/zd-versions-beta.template" todir="${build.dir}" overwrite="true"/>
+        <copy file="src/installer/zd-versions-release.template" todir="${build.dir}" overwrite="true"/>
+		<property name="channel.file" value="${build.dir}/zd-versions-${offline.channel}.template"/>
+
+        <copy file="src/installer/zd-versions-build.template" tofile="${channel.file}" overwrite="true"/>
+		<antcall target="replace-update-tokens" inheritall="true"/>
+	</target>
+
+	<target name="replace-update-tokens">
+		<replace file="${channel.file}" token="@version@" value="${offline.version}"/>
+		<propertyregex property="offline.version.major" input="${offline.version}" regexp="(\d*)\.(\d*)\.(\d*)" select="\1" casesensitive="false" />
+        <propertyregex property="offline.version.minor" input="${offline.version}" regexp="(\d*)\.(\d*)\.(\d*)" select="\2" casesensitive="false" />
+        <propertyregex property="offline.version.micro" input="${offline.version}" regexp="(\d*)\.(\d*)\.(\d*)" select="\3" casesensitive="false" />
+		<propertyregex property="timestamp_macos" input="${mac.installer.file}" regexp=".*(_b${offline.buildid})_(\d*)_${offline.suffix_macos}" select="\2" casesensitive="false"/>
+        <propertyregex property="timestamp_win32" input="${win.installer.file}" regexp=".*(_b${offline.buildid})_(\d*)_${offline.suffix_win32}" select="\2" casesensitive="false"/>
+        <propertyregex property="timestamp_win64" input="${win.installer.file.64}" regexp=".*(_b${offline.buildid})_(\d*)_${offline.suffix_win64}" select="\2" casesensitive="false"/>
+        <propertyregex property="timestamp_linux" input="${linux.installer.file}" regexp=".*(_b${offline.buildid})_(\d*)_${offline.suffix_linux}" select="\2" casesensitive="false"/>
+		<replace file="${channel.file}" token="@version.major@" value="${offline.version.major}"/>
+        <replace file="${channel.file}" token="@version.minor@" value="${offline.version.minor}"/>
+        <replace file="${channel.file}" token="@version.micro@" value="${offline.version.micro}"/>
+        <replace file="${channel.file}" token="@timestamp_macos@" value="${timestamp_macos}"/>
+        <replace file="${channel.file}" token="@timestamp_win32@" value="${timestamp_win32}"/>
+        <replace file="${channel.file}" token="@timestamp_win64@" value="${timestamp_win64}"/>
+        <replace file="${channel.file}" token="@timestamp_linux@" value="${timestamp_linux}"/>
+		<replace file="${channel.file}" token="@buildid@" value="${offline.buildid}"/>
+        <replace file="${channel.file}" token="@channel@" value="${offline.channel}"/>
+        <replace file="${channel.file}" token="@license@" value="${offline.aus.license}"/>
+        <replace file="${channel.file}" token="@details@" value="${offline.aus.details}"/>
+        <replace file="${channel.file}" token="@download_prefix@" value="${offline.aus.download}"/>
+        <replace file="${channel.file}" token="@buildtype@" value="${offline.relabel}"/>
+        <replace file="${channel.file}" token="@extver@" value="${offline.aus.extver}"/>
+
+		<if><available file="${build.dir}/${win.installer.file}" type="file"/><then>
+			<checksum file="${build.dir}/${win.installer.file}" property="hash_win32"/>
+			<length file="${build.dir}/${win.installer.file}" property="size_win32"/>
+			<replace file="${channel.file}" token="@hash_win32@" value="${hash_win32}"/>
+			<replace file="${channel.file}" token="@size_win32@" value="${size_win32}"/>
+		</then></if>
+
+		<if><available file="${build.dir}/${win.installer.file.64}" type="file"/><then>
+			<checksum file="${build.dir}/${win.installer.file.64}" property="hash_win64"/>
+			<length file="${build.dir}/${win.installer.file.64}" property="size_win64"/>
+			<replace file="${channel.file}" token="@hash_win64@" value="${hash_win64}"/>
+			<replace file="${channel.file}" token="@size_win64@" value="${size_win64}"/>
+		</then></if>
+
+		<if><available file="${build.dir}/${mac.installer.file}" type="file"/><then>
+			<checksum file="${build.dir}/${mac.installer.file}" property="hash_macos"/>
+			<length file="${build.dir}/${mac.installer.file}" property="size_macos"/>
+			<replace file="${channel.file}" token="@hash_macos@" value="${hash_macos}"/>
+			<replace file="${channel.file}" token="@size_macos@" value="${size_macos}"/>
+		</then></if>
+
+		<if><available file="${build.dir}/${linux.installer.file}" type="file"/><then>
+			<checksum file="${build.dir}/${linux.installer.file}" property="hash_linux"/>
+			<length file="${build.dir}/${linux.installer.file}" property="size_linux"/>
+			<replace file="${channel.file}" token="@hash_linux@" value="${hash_linux}"/>
+			<replace file="${channel.file}" token="@size_linux@" value="${size_linux}"/>
+		</then></if>
+        <replace file="${channel.file}" token="@media_win32@" value="${win.installer.file}"/>
+        <replace file="${channel.file}" token="@media_win64@" value="${win.installer.file.64}"/>
+        <replace file="${channel.file}" token="@media_macos@" value="${mac.installer.file}"/>
+        <replace file="${channel.file}" token="@media_linux@" value="${linux.installer.file}"/>
+		<loadfile srcFile="${build.dir}/zd-versions-beta.template" property="zd-beta-versions"/>
+        <loadfile srcFile="${build.dir}/zd-versions-release.template" property="zd-release-versions"/>
+        <replace file="${build.dir}/zd-versions.php" token="@zd-beta-versions@" value="${zd-beta-versions}"/>
+        <replace file="${build.dir}/zd-versions.php" token="@zd-release-versions@" value="${zd-release-versions}"/>
+	</target>
+
+	<target name="symlink-media">
+		<if><available file="${build.dir}/${media_linux}" type="file"/><then>
+			<delete file="${build.dir}/zdesktop_linux_i686.tgz" quiet="true" />
+			<symlink link="${build.dir}/zdesktop_linux_i686.tgz" resource="${media_linux}" overwrite="true"/>
+		</then></if>
+		<if><available file="${build.dir}/${media_macos}" type="file"/><then>
+			<delete file="${build.dir}/zdesktop_macos_intel.dmg" quiet="true" />
+			<symlink link="${build.dir}/zdesktop_macos_intel.dmg" resource="${media_macos}" overwrite="true"/>
+		</then></if>
+		<if><available file="${build.dir}/${media_win32}" type="file"/><then>
+			<copy tofile="${build.dir}/zdesktop_win32.msi" file="${build.dir}/${media_win32}" overwrite="true"/>
+		</then></if>
+		<if><available file="${build.dir}/${media_win64}" type="file"/><then>
+			<copy tofile="${build.dir}/zdesktop_win64.msi" file="${build.dir}/${media_win64}" overwrite="true"/>
+		</then></if>
+		</target>
+
+	<target name="gen-update-xml" depends="gen-filenames">
+        <property name="channel.file" value="${build.dir}/zd7.xml"/>
+
+        <copy file="src/installer/zd7.xml.template" tofile="${channel.file}" overwrite="true"/>
+        <antcall target="replace-update-tokens" inheritall="true"/>
+	</target>
+
+	<target name="gen-filenames">
+	  <fileset id="mac.installers" dir="${build.dir}">
+	  	<include name="${media_base}*${offline.suffix_macos}"/>
+	  </fileset>
+	  <property name="mac.installer.file" refid="mac.installers"/>
+      <fileset id="win.installers" dir="${build.dir}">
+        <include name="${media_base}*${offline.suffix_win32}"/>
+      </fileset>
+      <fileset id="win.installers.64" dir="${build.dir}">
+        <include name="${media_base}*${offline.suffix_win64}"/>
+      </fileset>
+      <property name="win.installer.file" refid="win.installers"/>
+	  <property name="win.installer.file.64" refid="win.installers.64"/>
+      <fileset id="linux.installers" dir="${build.dir}">
+        <include name="${media_base}*${offline.suffix_linux}"/>
+      </fileset>
+      <property name="linux.installer.file" refid="linux.installers"/>
+
+	  <echo message="Mac installer ${mac.installer.file}"/>
+      <echo message="Windows installer 32-bit ${win.installer.file}"/>
+	  <echo message="Windows installer 64-bit ${win.installer.file.64}"/>
+      <echo message="Linux installer ${linux.installer.file}"/>
+	</target>
+</project>
+

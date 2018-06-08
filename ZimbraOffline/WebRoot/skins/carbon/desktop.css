@@ -1,0 +1,27 @@
+/*
+ * 
+ */
+
+/* Offline-specific styles */
+
+BODY {
+	width: 100%;
+	height: 100%;
+	background-color: #5C5C5C;
+    background-image: -moz-linear-gradient(top, #5C5C5C, #2E2E2E); /* FF3.6 */
+    background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #5C5C5C),color-stop(1, #2E2E2E)); /* Saf4+, Chrome */
+    filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#5C5C5C', EndColorStr='#2E2E2E'); /* IE6,IE7 */
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#5C5C5C', EndColorStr='#2E2E2E')"; /* IE8 */
+}
+
+.ZPanel {
+	background: #a6a6a9 no-repeat top left;
+}
+
+.ZTip a {
+	color: #cccccc;
+}
+
+.ZDot {
+	color: #cccccc;
+}

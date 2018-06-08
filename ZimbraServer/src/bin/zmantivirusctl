@@ -1,0 +1,48 @@
+#!/bin/bash
+# 
+# 
+# 
+
+BASE=/opt/zimbra
+SCRIPTS="zmamavisdctl zmclamdctl"
+
+source /opt/zimbra/.bashrc
+
+case "$1" in 
+	start)
+		if [ x$2 = "x" ]; then
+			/opt/zimbra/libexec/configrewrite antivirus
+		fi
+		for i in $SCRIPTS; do
+			/opt/zimbra/bin/$i start norewrite
+		done
+	;;
+	stop)
+		for i in $SCRIPTS; do
+			if [ $i = "zmclamdctl" ]; then
+				/opt/zimbra/bin/$i stop
+			fi
+		done
+	;;
+	reload|restart)
+		for i in $SCRIPTS; do
+			/opt/zimbra/bin/$i $1
+		done
+	;;
+	status)
+		STATUS=0
+		for i in $SCRIPTS; do
+			/opt/zimbra/bin/$i status > /dev/null 2>&1
+			R=$?
+			if [ $R -ne "0" ]; then
+				echo "$i is not running"
+				STATUS=$R
+			fi
+		done
+		exit $STATUS
+	;;
+	*)
+		echo "$0 start|stop|restart|reload|status"
+		exit 1
+	;;
+esac

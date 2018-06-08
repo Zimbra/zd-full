@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# 
+# 
+
+if [ x`whoami` != xzimbra ]; then
+    echo Error: must be run as zimbra user
+    exit 1
+fi
+
+source `dirname $0`/../bin/zmshutil || exit 1
+zmsetvars
+
+download_dir=${mailboxd_directory}/webapps/zimbra/downloads
+
+client_file=$1
+
+if [ x${client_file} = "x" ]; then
+    echo 'Usage: $0 <filename>'
+    exit 1
+fi
+
+client_file_basename=`basename $client_file`
+
+# sed RE
+version_re='[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.*\(_BETA[^_]*_\)*\(_GA_\)*[0-9][0-9]*'
+client_file_appglob=`echo $client_file_basename | sed -e "s/$version_re/*/"`
+
+if [ ! -r ${client_file} ]; then
+    echo Error: ${client_file} does not exist or is unreadable
+    exit 1
+fi
+
+if [ ! -d ${download_dir} ]; then
+    echo Error: ${download_dir} does not exist
+    exit 1
+fi
+
+cp -f ${client_file} ${download_dir}
+
+if [ $? -ne 0 ]; then
+	echo Error: copy failed
+	exit 1
+fi
+
+for file in `ls ${download_dir}/${client_file_appglob}`; do
+	if [ ${file} = ${download_dir}/${client_file_basename} ]; then
+		continue
+	fi
+	echo Removing ${file}
+	/bin/rm -f ${file}
+done
+
+
+${zimbra_home}/bin/zmmailboxdctl update

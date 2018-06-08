@@ -1,0 +1,8 @@
+#!/bin/bash
+# 
+# 
+# 
+
+# utility for fixing up high/low priority flags on existing appointments and tasks
+
+exec `dirname $0`/zmjava com.zimbra.cs.mailbox.calendar.FixCalendarPriorityUtil "$@"

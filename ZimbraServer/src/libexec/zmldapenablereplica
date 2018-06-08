@@ -1,0 +1,297 @@
+#!/bin/bash
+# 
+# 
+# 
+
+source `dirname $0`/../bin/zmshutil || exit 1
+
+if [ "x$1" != "x" ]; then
+	echo "Usage: $0"
+	echo "	Use $0 to set up this server as an ldap replica"
+	echo "  or to enable the replication database on the master"
+	echo ""
+	echo "  $0 must have been run on the master prior to being"
+	echo "  run on any replicas.  It is only necessary to run"
+	echo "  $0 once on the master."
+	exit 1
+fi
+
+PID=""
+PIDFILE="/opt/zimbra/openldap/var/run/slapd.pid"
+
+zmsetvars -f\
+	zimbra_home \
+	zimbra_server_hostname \
+	ldap_master_url \
+	ldap_port \
+	ldap_root_password \
+	ldap_starttls_supported \
+	zimbra_ldap_password \
+	zimbra_ldap_userdn \
+	zimbra_require_interprocess_security \
+	zimbra_tmp_directory
+
+u=`id -un`
+if [ $u != ${zimbra_user} ]; then
+    echo "Error: must be run as ${zimbra_user} user"
+    exit 1
+fi
+
+ldap_master_host=`echo ${ldap_master_url} | sed -e 's|ldaps*://\([^:]*\):*.*|\1|'`
+
+# ldap commands
+LDA="${zimbra_home}/openldap/bin/ldapadd"
+LDM="${zimbra_home}/openldap/bin/ldapmodify"
+LDS="${zimbra_home}/openldap/bin/ldapsearch"
+
+if [ ${ldap_port} = 636 ]; then
+	proto="ldaps"
+else 
+	proto="ldap"
+fi
+
+toLower() { 
+  
+        echo $1 | tr "[:upper:]" "[:lower:]"
+}
+
+getpid()
+{
+        if [ -f $PIDFILE ]; then
+                PID=`cat $PIDFILE`
+        fi
+}
+
+checkrunning()
+{
+        getpid
+        if [ "x$PID" = "x" ]; then
+                RUNNING=0
+        else
+                kill -0 $PID
+                if [ $? != 0 ]; then
+                        PID=""
+                        RUNNING=0
+                else
+                        RUNNING=1
+                fi
+        fi
+}
+
+verifyLdapInstalled() {
+	echo -n "Looking for LDAP installation..."
+	if [ ! -d ${zimbra_home}/openldap/etc ]; then
+		echo "FAILED"
+		echo "ERROR: openldap does not appear to be installed - exiting"
+		exit 1
+	fi
+	echo "succeeded"
+}
+
+verifyLdap() {
+	echo -n "Verifying ldap on ${ldap_master_url}..."
+        num=`expr match "$ldap_master_url" 'ldaps*'`
+        if [ "$num" -eq 5 ]; then
+		TLS=
+	else
+		TLS=-Z
+	fi
+	ARGS="-x ${TLS} -s base -b cn=zimbra -H ${ldap_master_url} -D ${zimbra_ldap_userdn} -w ${zimbra_ldap_password}"
+	OUTPUT=`$LDS $ARGS 2>&1`
+	if [ $? -ne 0 ]; then
+		echo "FAILED"
+		echo "ERROR: Unable to verify ldap connection on ${ldap_master_url} - exiting"
+		echo "$LDS $ARGS"
+		echo $OUTPUT
+		exit 1
+	fi
+	echo "succeeded"
+}
+
+verifyAccesslog() {
+	# Verify that accesslog DB doesn't already exist.
+	ARGS="-x -H ldapi:/// -LLL -D cn=config -w ${ldap_root_password} -s base -b cn=accesslog"
+	OUTPUT=`$LDS $ARGS 2>&1`
+	if [ $? -eq 0 ]; then
+		echo 'Accesslog is already enabled. Exiting...'
+		exit 1
+	fi
+}
+
+verifySyncProv() {
+	# Verify that the syncprov overlay doesn't already exist
+	ARGS="-x -H ldapi:/// -D cn=config -w ${ldap_root_password} -b olcOverlay={0}syncprov,olcDatabase={2}hdb,cn=config -s base"
+	OUTPUT=`$LDS $ARGS 2>&1`
+	if [ $? -eq 0 ]; then
+		echo 'Error: Syncprov already enabled. Exiting...'
+		exit 1
+	fi
+}
+
+enableSyncProv() {
+	echo -n "Enabling sync provider on master..."
+	mkdir -p ${zimbra_home}/data/ldap/accesslog/db
+	mkdir -p ${zimbra_home}/data/ldap/accesslog/logs
+
+        # Install accesslog DB_CONFIG
+	if [ ! -f ${zimbra_home}/data/ldap/accesslog/db/DB_CONFIG -o ! -s ${zimbra_home}/data/ldap/accesslog/db/DB_CONFIG ]; then
+		if [ -f ${zimbra_home}/conf/custom/ldap/DB_CONFIG.accesslog ]; then
+			cp -f ${zimbra_home}/conf/custom/ldap/DB_CONFIG.accesslog ${zimbra_home}/data/ldap/accesslog/db/DB_CONFIG
+		else
+			cp -f ${zimbra_home}/openldap/var/openldap-data/DB_CONFIG.accesslog ${zimbra_home}/data/ldap/accesslog/db/DB_CONFIG
+		fi
+	fi
+	ARGS="-x -H ldapi:/// -D cn=config -w ${ldap_root_password} -f ${zimbra_home}/openldap/etc/openldap/syncprov-master.ldif"
+	OUTPUT=`$LDA $ARGS 2>&1`
+	if [ $? -eq 0 ]; then
+		echo "succeeded"
+	else
+		echo "FAILED"
+		echo "ERROR: Unable to add accesslog database to ${zimbra_server_hostname} - exiting"
+		echo $OUTPUT
+		exit 1
+	fi
+}
+
+createLdapConfig() {
+	# Verify syncprov isn't already enabled on the db
+	echo -n "Enabling sync replication on replica..."
+        num=`expr match "$ldap_master_url" 'ldaps*'`
+        if [ "$num" -eq 5 ]; then
+	cat >> ${zimbra_tmp_directory}/syncprov-replica.mod.$$<<EOF
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+add: olcSyncrepl
+olcSyncrepl: rid=100 provider=${ldap_master_url} bindmethod=si
+ mple timeout=0 network-timeout=0 binddn=uid=zmreplica,cn=admins,cn=zimbra c
+ redentials=${ldap_replication_password} filter="(objectclass=*)" searchbase=""
+  logfilter="(&(objectClass=auditWriteObject)(reqResult=0))" logbase=cn=access
+ log scope=sub schemachecking=off type=refreshAndPersist retry="60 +" syncdat
+ a=accesslog tls_cacertdir=/opt/zimbra/conf/ca keepalive=240:10:30
+-
+add: olcUpdateRef
+olcUpdateRef: ${ldap_master_url}
+-
+EOF
+	elif [ ${ldap_starttls_supported} -eq 1 -a ${zimbra_require_interprocess_security} -eq 1 ]; then
+	cat >> ${zimbra_tmp_directory}/syncprov-replica.mod.$$<<EOF
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+add: olcSyncrepl
+olcSyncrepl: rid=100 provider=${ldap_master_url} bindmethod=si
+ mple timeout=0 network-timeout=0 binddn=uid=zmreplica,cn=admins,cn=zimbra c
+ redentials=${ldap_replication_password} starttls=critical filter="(objectclass=*)" searchbase=""
+  logfilter="(&(objectClass=auditWriteObject)(reqResult=0))" logbase=cn=access
+ log scope=sub schemachecking=off type=refreshAndPersist retry="60 +" syncdat
+ a=accesslog tls_cacertdir=/opt/zimbra/conf/ca keepalive=240:10:30
+-
+add: olcUpdateRef
+olcUpdateRef: ${ldap_master_url}
+-
+EOF
+	else
+	cat >> ${zimbra_tmp_directory}/syncprov-replica.mod.$$<<EOF
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+add: olcSyncrepl
+olcSyncrepl: rid=100 provider=${ldap_master_url} bindmethod=si
+ mple timeout=0 network-timeout=0 binddn=uid=zmreplica,cn=admins,cn=zimbra c
+ redentials=${ldap_replication_password} filter="(objectclass=*)" searchbase=""
+  logfilter="(&(objectClass=auditWriteObject)(reqResult=0))" logbase=cn=access
+ log scope=sub schemachecking=off type=refreshAndPersist retry="60 +" syncdat
+ a=accesslog tls_cacertdir=/opt/zimbra/conf/ca keepalive=240:10:30
+-
+add: olcUpdateRef
+olcUpdateRef: ${ldap_master_url}
+-
+EOF
+	fi
+	ARGS="-x -H ldapi:/// -D cn=config -w ${ldap_root_password} -f ${zimbra_tmp_directory}/syncprov-replica.mod.$$"
+	OUTPUT=`$LDM $ARGS 2>&1`
+	if [ $? -ne 0 ]; then
+		echo "FAILED"
+		echo "ERROR: Unable to add syncrepl configuration to ${zimbra_server_hostname} - exiting"
+		echo $OUTPUT
+		resetLdapUrl
+		zmsetvars -f ldap_url
+		exit 1
+	fi
+
+	# ADD SYNCPROV overlay to DB
+	ARGS="-x -H ldapi:/// -D cn=config -w ${ldap_root_password} -f ${zimbra_home}/openldap/etc/openldap/syncprov-replica.ldif"
+	OUTPUT=`$LDA $ARGS 2>&1`
+	if [ $? -eq 0 ]; then
+		echo "succeeded"
+	else
+		echo "FAILED"
+		echo "ERROR: Unable to add syncprov overlay to ${zimbra_server_hostname} - exiting"
+		echo $OUTPUT
+		resetLdapUrl
+		zmsetvars -f ldap_url
+		exit 1
+	fi
+}
+
+enableLdapService() {
+	echo -n "Enabling LDAP service on ${zimbra_server_hostname}..."
+	SERVICES=`${zimbra_home}/bin/zmprov -m -l gs ${zimbra_server_hostname} | sed -ne '/^zimbraServiceEnabled/ s/zimbraServiceEnabled: //p'`
+	echo $SERVICES | grep -q ldap
+	if [ $? -ne 0 ]; then
+		echo -n "..."
+		NEWSERVICES="zimbraServiceEnabled ldap"
+		for s in $SERVICES; do
+			NEWSERVICES="$NEWSERVICES zimbraServiceEnabled $s"
+		done
+		${zimbra_home}/bin/zmprov -m -l ms ${zimbra_server_hostname} $NEWSERVICES
+	fi
+	echo "succeeded"
+}
+
+updateLdapHost() {
+	echo -n "Setting ldap_url on ${zimbra_server_hostname}...";
+	${zimbra_home}/bin/zmlocalconfig -f -e ldap_url="${proto}://${zimbra_server_hostname}:${ldap_port} ${ldap_master_url}"
+	echo "done"
+}
+
+resetLdapUrl() {
+	echo -n "Resetting ldap_url on ${zimbra_server_hostname}...";
+	${zimbra_home}/bin/zmlocalconfig -f -e ldap_url="${ldap_master_url}"
+	echo "done"
+}
+
+startLdap() {
+	echo -n "Starting LDAP on ${zimbra_server_hostname}..."
+	checkrunning
+	if [ $RUNNING = 0 ]; then
+		${zimbra_home}/bin/ldap start > /dev/null 2>&1
+		if [ $? = 1 ]; then
+			echo "Error: Unable to start ldap, exiting."
+			resetLdapUrl
+			zmsetvars -f ldap_url
+			exit 1;
+		fi
+	fi
+	echo "done"
+}
+stopLdap() {
+	echo -n "Stopping LDAP on ${zimbra_server_hostname}..."
+	${zimbra_home}/bin/ldap stop > /dev/null 2>&1
+	echo "done"
+}
+
+if [ `toLower $ldap_master_host` = `toLower $zimbra_server_hostname` ]; then
+  verifyAccesslog
+  verifySyncProv
+  enableSyncProv
+  exit 0
+fi
+
+verifyLdapInstalled
+verifyLdap
+updateLdapHost
+zmsetvars -f ldap_url
+startLdap
+verifyAccesslog
+verifySyncProv
+createLdapConfig
+enableLdapService

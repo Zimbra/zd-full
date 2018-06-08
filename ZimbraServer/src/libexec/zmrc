@@ -1,0 +1,30 @@
+#!/usr/bin/perl
+# 
+# 
+# 
+
+my $desthost=$ARGV[0];
+
+shift;
+
+my $keyfile="/opt/zimbra/.ssh/zimbra_identity";
+
+if ($desthost eq "") {
+	print "Usage: $0 <hostname>\n";
+	exit 1;
+}
+
+if ($#ARGV >= 0) {
+	$cmd = "echo @ARGV | ssh -T -i ${keyfile} -o StrictHostKeyChecking=no zimbra\@${desthost}";
+} else {
+	$cmd = "ssh -T -i ${keyfile} -o StrictHostKeyChecking=no zimbra\@${desthost}";
+}
+
+open P, "$cmd |";
+$SIG{ALRM} = \&quit;
+while (<P>) {print $_; alarm(10);}
+close P;
+
+sub quit {
+	exit 0;
+}

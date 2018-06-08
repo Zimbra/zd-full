@@ -1,0 +1,19 @@
+override chrome://global/locale/netError.dtd chrome://browser/locale/netError.dtd
+locale places zh-CN jar:zh-CN.jar!/locale/zh-CN/places/
+locale global zh-CN jar:zh-CN.jar!/locale/zh-CN/global/
+override chrome://mozapps/locale/downloads/settingsChange.dtd chrome://browser/locale/downloads/settingsChange.dtd
+override chrome://global/locale/appstrings.properties chrome://browser/locale/appstrings.properties
+locale branding zh-CN jar:zh-CN.jar!/locale/branding/
+locale reporter zh-CN jar:zh-CN.jar!/locale/zh-CN/reporter/
+locale global-region zh-CN jar:zh-CN.jar!/locale/zh-CN/global-region/
+locale autoconfig zh-CN jar:zh-CN.jar!/locale/zh-CN/autoconfig/
+locale cookie zh-CN jar:zh-CN.jar!/locale/zh-CN/cookie/
+locale pippki zh-CN jar:zh-CN.jar!/locale/zh-CN/pippki/
+locale mozapps zh-CN jar:zh-CN.jar!/locale/zh-CN/mozapps/
+locale necko zh-CN jar:zh-CN.jar!/locale/zh-CN/necko/
+locale browser-region zh-CN jar:zh-CN.jar!/locale/browser-region/
+locale alerts zh-CN jar:zh-CN.jar!/locale/zh-CN/alerts/
+locale browser zh-CN jar:zh-CN.jar!/locale/browser/
+locale global-platform zh-CN jar:zh-CN.jar!/locale/zh-CN/global-platform/
+locale pipnss zh-CN jar:zh-CN.jar!/locale/zh-CN/pipnss/
+locale passwordmgr zh-CN jar:zh-CN.jar!/locale/zh-CN/passwordmgr/

@@ -1,0 +1,16 @@
+#!/bin/bash
+# 
+# 
+# 
+
+rm -rf /opt/zimbra/nginx
+ln -s /opt/zimbra/nginx-0.9-zimbra /opt/zimbra/nginx
+
+if [ -x "/opt/zimbra/libexec/zmfixperms" ]; then
+  /opt/zimbra/libexec/zmfixperms
+fi
+
+PKG=`echo ${RECEIPT_PATH} | sed -e 's|.*/\(zimbra-proxy[^/]*pkg\)/.*|\1|' | sed -e 's/\./-/'`
+D=`date +%s`
+echo "${D}: UPGRADED ${PKG}" >> /opt/zimbra/.install_history
+exit 0

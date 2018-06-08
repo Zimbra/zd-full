@@ -1,0 +1,19 @@
+override chrome://global/locale/netError.dtd chrome://browser/locale/netError.dtd
+locale pipnss ko jar:ko.jar!/locale/ko/pipnss/
+locale global-region ko jar:ko.jar!/locale/ko/global-region/
+override chrome://mozapps/locale/downloads/settingsChange.dtd chrome://browser/locale/downloads/settingsChange.dtd
+override chrome://global/locale/appstrings.properties chrome://browser/locale/appstrings.properties
+locale mozapps ko jar:ko.jar!/locale/ko/mozapps/
+locale global-platform ko jar:ko.jar!/locale/ko/global-platform/
+locale browser-region ko jar:ko.jar!/locale/browser-region/
+locale passwordmgr ko jar:ko.jar!/locale/ko/passwordmgr/
+locale reporter ko jar:ko.jar!/locale/ko/reporter/
+locale places ko jar:ko.jar!/locale/ko/places/
+locale alerts ko jar:ko.jar!/locale/ko/alerts/
+locale cookie ko jar:ko.jar!/locale/ko/cookie/
+locale global ko jar:ko.jar!/locale/ko/global/
+locale branding ko jar:ko.jar!/locale/branding/
+locale browser ko jar:ko.jar!/locale/browser/
+locale pippki ko jar:ko.jar!/locale/ko/pippki/
+locale necko ko jar:ko.jar!/locale/ko/necko/
+locale autoconfig ko jar:ko.jar!/locale/ko/autoconfig/

@@ -1,0 +1,126 @@
+/*
+ * 
+ */
+
+/**
+ * @overview
+ * This file contains a contact helper class.
+ * 
+ */
+
+/**
+ * Default constructor for helper class.
+ * @class
+ * Miscellaneous contacts-related utility functions. So far, mostly things that
+ * {@link ZmContactPicker} and {@link ZmGroupView} both need to perform a contacts search and
+ * display results in a list view.
+ *
+ * @author Conrad Damon
+ */
+ZmContactsHelper = function() {};
+
+/**
+ * Performs a contact search (in either personal contacts or in the GAL) and populates
+ * the source list view with the results.
+ *
+ * @param	{Hash}	params		a hash of parameters
+ * @param {Object}	params.obj			the object that is doing the search
+ * @param {String}	params.query			the query string to search on
+ * @param {String}	params.queryHint		the query hint (i.e. searching shared folders)
+ * @param {Boolean}	params.ascending		if <code>true</code>, sort in ascending order
+ * @param {int}	params.lastId		the ID of last item displayed (for pagination)
+ * @param {String}	params.lastSortVal	the value of sort field for above item
+ * @param {AjxCallback}	params.respCallback	the callback to call once response comes back from server
+ * @param {AjxCallback}	params.errorCallback	the callback to call if error returned from server
+ * @param {String}	params.accountName	the account to make search request on behalf of
+ * @param {Array}   params.conds	the conds to restrict the search by (array of {attr:"", op:"", value:""} hashes)
+ */
+ZmContactsHelper.search =
+function(params) {
+	var o = params.obj;
+	if (o._searchButton) {
+		o._searchButton.setEnabled(false);
+	}
+
+	params.sortBy = params.ascending ? ZmSearch.NAME_ASC : ZmSearch.NAME_DESC;
+	params.types = AjxVector.fromArray([ZmItem.CONTACT]);
+	params.offset = params.offset || 0;
+	params.limit = ZmContactsApp.SEARCHFOR_MAX;
+	params.contactSource = o._contactSource;
+	params.field = "contact";
+
+	var search = new ZmSearch(params);
+	search.execute({callback:params.respCallback, errorCallback:params.errorCallback});
+};
+
+/**
+ * Take the contacts and create a list of their email addresses (a contact may have more than one)
+ * 
+ * @private
+ */
+ZmContactsHelper._processSearchResponse = 
+function(resp) {
+	var vec = resp.getResults(ZmItem.CONTACT);
+
+	// Take the contacts and create a list of their email addresses (a contact may have more than one)
+	var list = [];
+	var a = vec.getArray();
+	for (var i = 0; i < a.length; i++) {
+		var contact = a[i];
+		if (contact.isGroup() && !contact.isDL) {
+			var members = contact.getGroupMembers().good.toString(AjxEmailAddress.SEPARATOR);
+			ZmContactsHelper._addContactToList(list, contact, members, true);
+		} else {
+			var emails = contact.isGal ? [contact.getEmail()] : contact.getEmails();
+			for (var j = 0; j < emails.length; j++) {
+				ZmContactsHelper._addContactToList(list, contact, emails[j]);
+			}
+		}
+	}
+	
+	return list;
+};
+
+/**
+ * @private
+ */
+ZmContactsHelper._addContactToList = 
+function(list, contact, addr, isGroup) {
+	
+	var fileAs = contact.getFileAs();
+	var name = (fileAs != addr) ? fileAs : "";
+	var email = new AjxEmailAddress(addr, null, name, null, isGroup);
+	email.id = Dwt.getNextId();
+	email.__contact = contact;
+	email.icon = contact.getIcon();
+	if (contact.isDL) {
+		email.isGroup = true;
+		email.canExpand = contact.canExpand;
+		var ac = window.parentAppCtxt || window.appCtxt;
+		ac.setIsExpandableDL(addr, email.canExpand);
+	}
+	list.push(email);
+};
+
+/**
+ * The items are AjxEmailAddress objects
+ * 
+ * @private
+ */
+ZmContactsHelper._getEmailField =
+function(html, idx, item, field, colIdx) {
+	if (field == ZmItem.F_TYPE) {
+		html[idx++] = AjxImg.getImageHtml(item.icon);
+	} else if (field == ZmItem.F_NAME) {
+		html[idx++] = "<nobr>";
+		html[idx++] = AjxStringUtil.htmlEncode(item.name);
+		html[idx++] = "</nobr>";
+	} else if (field == ZmItem.F_EMAIL) {
+		html[idx++] = AjxStringUtil.htmlEncode(item.address);
+	} else if (field == ZmItem.F_DEPARTMENT) {
+		if (item.__contact) {
+			html[idx++] = AjxStringUtil.htmlEncode(ZmContact.getAttr(item.__contact, ZmContact.F_department));
+		}
+	}
+	return idx;
+};

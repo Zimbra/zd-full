@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * 
+-->
+
+<localconfig>
+  <key name="calendar_cache_lru_size">
+    <value>20</value>
+  </key>
+  <key name="data_source_new_sync_enabled">
+    <value>true</value>
+  </key>
+  <key name="data_source_scheduling_enabled">
+    <value>false</value>
+  </key>
+  <key name="data_source_xsync_class">
+    <value>com.zimbra.zimbrasync.client.ExchangeSync</value>
+  </key>
+  <key name="data_source_xsync_factory_class">
+    <value>com.zimbra.zimbrasync.client.OfflineExchangeSyncFactory</value>
+  </key>
+  <key name="data_source_ioexception_handler_class">
+    <value>com.zimbra.cs.mailbox.SyncExceptionHandler</value>
+  </key>
+  <key name="debug_disable_mailbox_group">
+    <value>true</value>
+  </key>
+  <key name="http_connection_timeout">
+    <value>30000</value>
+  </key>
+  <key name="http_so_timeout">
+    <value>30000</value>
+  </key>
+  <key name="client_use_system_proxy">
+    <value>true</value>
+  </key>
+  <key name="client_use_native_proxy_selector">
+    <value>true</value>
+  </key>
+  <key name="soap_fault_include_stack_trace">
+    <value>true</value>
+  </key>
+  <key name="javamail_imap_debug">
+    <value>false</value>
+  </key>
+  <key name="javamail_pop3_debug">
+    <value>false</value>
+  </key>
+  <key name="javamail_smtp_debug">
+    <value>false</value>
+  </key>
+  <key name="javamail_zsmtp">
+    <value>false</value>
+  </key>
+  <key name="mailboxd_output_filename">
+    <value>zdesktop.out</value>
+  </key>
+  <key name="mailboxd_output_rotate_interval">
+    <value>0</value>
+  </key>
+  <key name="sqlite_cache_size">
+    <value>500</value>
+  </key>
+  <key name="sqlite_journal_mode">
+    <value>WAL</value>
+  </key>
+  <key name="sqlite_sync_mode">
+    <value>FULL</value>
+  </key>
+  <key name="ssl_allow_mismatched_certs">
+    <value>false</value>
+  </key>
+  <key name="zdesktop_app_id">
+    <value>4062-5711-9195-4050</value>
+  </key>
+  <key name="zdesktop_gal_sync_trace_enabled">
+    <value>false</value>
+  </key>
+  <key name="zdesktop_gal_sync_interval_seconds">
+    <value>43200</value>
+  </key>
+  <key name="zdesktop_gal_refresh_interval_days">
+    <value>30</value>
+  </key>
+  <!-- 5 min -->
+  <key name="zdesktop_gal_sync_request_timeout">
+    <value>300000</value>
+  </key>
+  <key name="zdesktop_installation_key">
+    <value>@install.key@</value>
+  </key>
+  <key name="zdesktop_mail_file_descriptor_cache_size">
+    <value>5</value>
+  </key>
+  <key name="zdesktop_message_cache_size">
+    <value>12</value>
+  </key>
+  <key name="zdesktop_request_timeout">
+    <value>30000</value>
+  </key>
+  <key name="zdesktop_skins">
+    <value>carbon,twilight,lake,oasis,pebble,smoke,tree</value>
+  </key>
+  <key name="zdesktop_volume_compression_threshold">
+    <value>131072</value>
+  </key>
+  <key name="zdesktop_local_account_id">
+    <value>ffffffff-ffff-ffff-ffff-ffffffffffff</value>
+  </key>
+  <key name="zdesktop_backup_dir">
+    <value>${zimbra_home}/../zd_backup</value>
+  </key>
+  <key name="zdesktop_sync_io_exception_limit">
+    <value>10</value>
+  </key>
+  <key name="zdesktop_sync_io_exception_rate">
+    <value>50</value>
+  </key>
+  <key name="zimbra_admin_service_port">
+    <value>7733</value>
+  </key>
+  <key name="zimbra_admin_service_scheme">
+    <value>http://</value>
+  </key>
+  <key name="zimbra_authtoken_cache_size">
+    <value>16</value>
+  </key>
+  <key name="zimbra_class_accessmanager">
+    <value>com.zimbra.cs.account.offline.OfflineAccessManager</value>
+  </key>
+  <key name="zimbra_class_application">
+    <value>com.zimbra.cs.offline.OfflineApplication</value>
+  </key>
+  <key name="zimbra_class_database">
+    <value>com.zimbra.cs.db.SQLite</value>
+  </key>
+  <key name="zimbra_class_datasourcemanager">
+    <value>com.zimbra.cs.datasource.offline.OfflineDataSourceManager</value>
+  </key>
+  <key name="zimbra_class_mboxmanager">
+    <value>com.zimbra.cs.mailbox.OfflineMailboxManager</value>
+  </key>
+  <key name="zimbra_class_provisioning">
+    <value>com.zimbra.cs.account.offline.OfflineProvisioning</value>
+  </key>
+  <key name="zimbra_class_rulerewriterfactory">
+    <value>com.zimbra.cs.filter.OfflineRuleRewriterFactory</value>
+  </key>
+  <key name="zimbra_class_sslprotocolsocketfactory">
+    <value>com.zimbra.common.net.CustomSSLProtocolSocketFactory</value>
+  </key>
+  <key name="zimbra_class_attrmanager">
+    <value>com.zimbra.cs.account.offline.OfflineAttributeManager</value>
+  </key>
+  <key name="zimbra_class_soapsessionfactory">
+    <value>com.zimbra.cs.session.OfflineSoapSessionFactory</value>  
+  </key>
+  <key name="zimbra_class_dbconnfactory">
+    <value>com.zimbra.cs.db.RetryConnectionFactory</value>
+  </key>
+  <key name="zimbra_class_conditionalproxyselector">
+    <value>com.zimbra.cs.offline.net.AttrProxySelector</value>
+  </key>
+  <key name="zimbra_class_galgroupinfoprovider">
+    <value>com.zimbra.cs.mailbox.OfflineGalGroupInfoProvider</value>
+  </key>
+  <key name="zimbra_disk_cache_servlet_flush">
+    <value>false</value>
+  </key>
+  <key name="zimbra_index_completed_pool_size">
+    <value>2</value>
+  </key>
+  <key name="zimbra_index_flush_pool_size">
+    <value>2</value>
+  </key>
+  <key name="zimbra_index_idle_flush_time">
+    <value>60</value>
+  </key>
+  <key name="zimbra_index_lucene_nobatch_merge_factor">
+    <value>6</value>
+  </key>
+  <key name="zimbra_index_lucene_nobatch_ram_buffer_size_kb">
+    <value>5120</value>
+  </key>
+  <key name="zimbra_index_max_uncommitted_operations">
+    <value>50</value>
+  </key>
+  <key name="zimbra_index_reindex_pool_size">
+    <value>2</value>
+  </key>
+  <key name="zimbra_java_path">
+    <value>jre</value>
+  </key>
+  <key name="zimbra_ldap_password">
+    <value>@install.key@</value>
+  </key>
+  <key name="zimbra_log4j_properties_watch">
+    <value>0</value>
+  </key>
+  <key name="zimbra_mailbox_groups">
+    <value>100</value>
+  </key>
+  <key name="zimbra_mailbox_purgeable">
+    <value>false</value>
+  </key>
+  <key name="zimbra_mailbox_active_cache">
+    <value>50</value>
+  </key>
+  <key name="zimbra_mailbox_inactive_cache">
+    <value>10</value>
+  </key>
+  <key name="zimbra_minimize_resources">
+    <value>true</value>
+  </key>
+  <key name="zimbra_relative_volume_path">
+    <value>true</value>
+  </key>
+  <key name="zimbra_rights_delegated_admin_supported">
+    <value>false</value>
+  </key>
+  <key name="zimbra_web_generate_gzip">
+    <value>false</value>
+  </key>
+  <key name="zimbra_slow_logging_enabled">
+    <value>true</value>
+  </key>
+  <key name="zimbra_slow_logging_threshold">
+    <value>5000</value>
+  </key>
+  <key name="data_source_imap_reuse_connections">
+    <value>true</value>
+  </key>
+  <key name="zimbra_auth_provider">
+    <value>offline</value>
+  </key>
+  <key name="zimbra_archive_formatter_search_chunk_size">
+    <value>128</value>
+  </key>
+  <key name="zdesktop_heapdump_enabled">
+    <value>true</value>
+  </key>
+  <key name="check_dl_membership_enabled">
+    <value>false</value>
+  </key>
+  <key name="rest_request_max_upload_size">
+    <value>21474836480</value>
+  </key>
+  <key name="zdesktop_auto_archive_on_startup_time">
+    <value>30</value>
+  </key>
+</localconfig>

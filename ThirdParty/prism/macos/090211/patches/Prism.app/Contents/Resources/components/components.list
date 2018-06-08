@@ -1,0 +1,6 @@
+libprism.dylib
+nsCommandLineHandler.js
+nsPlatformGlue.js
+WebContentConverter.js
+nsAppStartup.js
+ForceOnline.js

@@ -1,0 +1,30 @@
+#!/bin/bash
+# 
+# 
+# 
+
+SAVEDIR=/opt/zimbra/.saveconfig
+if [ ! -d "$SAVEDIR" ]; then
+ mkdir -p $SAVEDIR
+fi
+if [ -d "$SAVEDIR/zimlet" ]; then
+  rm -rf $SAVEDIR/zimlet > /dev/null 2>&1
+fi
+if [ -d "/opt/zimbra/tomcat/webapps/service/zimlet" ]; then
+  cp -rf /opt/zimbra/tomcat/webapps/service/zimlet $SAVEDIR
+elif [ -d "/opt/zimbra/mailboxd/webapps/service/zimlet" ]; then
+  cp -rf /opt/zimbra/mailboxd/webapps/service/zimlet $SAVEDIR
+fi
+
+if [ -d "/opt/zimbra/wiki" ]; then
+  cp -rf /opt/zimbra/wiki $SAVEDIR
+fi
+
+# remove this before upgrade so they are recompiled
+if [ -d "/opt/zimbra/mailboxd/work/zimbra" ]; then
+  rm -rf /opt/zimbra/mailboxd/work/zimbra
+fi
+
+if [ -d "/opt/zimbra/mailboxd/work/zimbraAdmin" ]; then
+  rm -rf /opt/zimbra/mailboxd/work/zimbraAdmin
+fi

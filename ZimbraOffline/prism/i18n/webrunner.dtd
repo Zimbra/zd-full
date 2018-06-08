@@ -1,0 +1,59 @@
+<!ENTITY app.title                  "Zimbra Desktop">
+
+<!ENTITY commands.tooltip           "@prism.exts.Commands@">
+<!ENTITY file.label                 "@prism.exts.File@">
+<!ENTITY cut.label                  "@prism.exts.Cut@">
+<!ENTITY copy.label                 "@prism.exts.Copy@">
+<!ENTITY copylink.label             "@prism.exts.CopyLinkLoc@">
+<!ENTITY paste.label                "@prism.exts.Paste@">
+<!ENTITY delete.label               "@prism.exts.Delete@">
+<!ENTITY selectAll.label            "@prism.exts.SelectAll@">
+<!ENTITY saveImage.label            "@prism.exts.SaveImage@">
+<!ENTITY noSuggestions.label        "@prism.exts.NoSuggest@">
+<!ENTITY addToDictionary.label      "@prism.exts.AddToDict@">
+<!ENTITY print.label                "@prism.exts.Print@">
+<!ENTITY pageSetup.label            "@prism.exts.PageSetup@">
+<!ENTITY back.label                 "@prism.exts.Back@">
+<!ENTITY forward.label              "@prism.exts.Forward@">
+<!ENTITY home.label                 "@prism.exts.Home@">
+<!ENTITY reload.label               "@prism.exts.Reload@">
+<!ENTITY close.label                "@prism.exts.Close@">
+<!ENTITY quit.label                 "@prism.exts.QuitZD@">
+<!ENTITY about.label                "@prism.exts.AboutZD@">
+<!ENTITY console.label              "@prism.exts.ErrConsole@">
+<!ENTITY install.label              "@prism.exts.InstallShortcut@">
+<!ENTITY tools.label                "@prism.exts.Tools@">
+<!ENTITY prefs.label                "@prism.exts.Preferences@">
+<!ENTITY appsPref.label             "@prism.exts.AppsPref@">
+<!ENTITY minimizeWindow.label       "@prism.exts.Minimize@">
+<!ENTITY addons.label               "@prism.exts.AddOns@">
+
+<!ENTITY zoomIn.label               "@prism.exts.ZoomIn@">
+<!ENTITY zoomIn.commandkey          "+">
+<!ENTITY zoomIn.commandkey2         "=">
+<!ENTITY zoomIn.modifiers           "accel">
+<!ENTITY zoomOut.label              "@prism.exts.ZoomOut@">
+<!ENTITY zoomOut.commandkey         "-">
+<!ENTITY zoomOut.modifiers          "accel">
+<!ENTITY zoomReset.label            "@prism.exts.ZoomReset@">
+<!ENTITY zoomReset.commandkey       "0">
+<!ENTITY zoomReset.modifiers        "accel">
+<!ENTITY fullScreen.label           "@prism.exts.Fullscreen@">
+
+<!ENTITY findOnCmd.label            "@prism.exts.FindInThisPage@">
+<!ENTITY findOnCmd.accesskey        "F">
+<!ENTITY findOnCmd.commandkey       "f">
+<!ENTITY findNextCmd.label          "@prism.exts.FindNext@">
+<!ENTITY findNextCmd.accesskey      "g">
+<!ENTITY findNextCmd.commandkey     "g">
+<!ENTITY findNextCmd.commandkey2    "VK_F3">
+<!ENTITY findPreviousCmd.label      "@prism.exts.FindPrevious@">
+
+<!ENTITY servicesMenu.label         "@prism.exts.Services@">
+<!ENTITY hideThisApp.label          "@prism.exts.HideZD@">
+<!ENTITY hideThisApp.commandkey     "H">
+<!ENTITY hideThisApp.modifiers      "accel">
+<!ENTITY hideOtherApps.label        "@prism.exts.HideOthers@">
+<!ENTITY hideOtherApps.commandkey   "H">
+<!ENTITY hideOtherApps.modifiers    "accel,alt">
+<!ENTITY showAllApps.label          "@prism.exts.ShowAll@">

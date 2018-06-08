@@ -1,0 +1,81 @@
+/*
+ * 
+ */
+package com.zimbra.cs.mailclient.pop3;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * Input stream for reading POP3 response content.
+ */
+public final class ContentInputStream extends InputStream {
+    private final InputStream in;
+    private final StringBuilder sbuf;
+    private int pos;
+
+    public ContentInputStream(InputStream is) {
+        in = is;
+        sbuf = new StringBuilder(132);
+        sbuf.setLength(0);
+    }
+
+    public int read() throws IOException {
+        if (pos == -1) return -1;
+        if (pos >= sbuf.length()) {
+            if (!fillBuffer()) return -1;
+        }
+        return sbuf.charAt(pos++);
+    }
+
+    public String readLine() throws IOException {
+        if (pos == -1) return null;
+        if (pos >= sbuf.length()) {
+            if (!fillBuffer()) return null;
+        }
+        // Return rest of line excluding trailing "\r\n"
+        int len = sbuf.length() - pos;
+        String line = len > 2 ? sbuf.substring(pos, len - 2) : "";
+        pos = sbuf.length();
+        return line;
+    }
+
+    public void close() throws IOException {
+        skipRemaining();
+    }
+
+    private void skipRemaining() throws IOException {
+        while (read() != -1) {
+            // Do nothing...
+        }
+    }
+
+    // Fill input buffer with next line of content
+    private boolean fillBuffer() throws IOException {
+        sbuf.setLength(0);
+        int b = 0;
+        char lastChar;
+        do {
+            lastChar = (char) b;
+            b = in.read();
+            if (b == -1) {
+                throw new EOFException(
+                    "Unexpected end of stream while reading content");
+            }
+            sbuf.append((char) b);
+        } while (!(b == '\n' && lastChar == '\r'));
+        int len = sbuf.length();
+        // Check for end of content
+        if (len == 3 && sbuf.charAt(0) == '.') {
+            pos = -1;
+            return false;
+        }
+        // Check for quoted "." at beginning of line
+        if (len == 4 && sbuf.charAt(0) == '.' && sbuf.charAt(1) == '.') {
+            sbuf.deleteCharAt(0);
+        }
+        pos = 0;
+        return true;
+    }
+}

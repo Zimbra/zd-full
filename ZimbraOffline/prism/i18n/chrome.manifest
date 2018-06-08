@@ -1,0 +1,68 @@
+locale webrunner en-US en-US/
+locale branding en-US en-US/branding/
+locale webapp en-US en-US/webapp/
+
+locale webrunner fr fr/
+locale branding fr fr/branding/
+locale webapp fr fr/webapp/
+
+locale webrunner da da/
+locale branding da da/branding/
+locale webapp da da/webapp/
+
+locale webrunner de de/
+locale branding de de/branding/
+locale webapp de de/webapp/
+
+locale webrunner en-AU en-AU/
+locale branding en-AU en-AU/branding/
+locale webapp en-AU en-AU/webapp/
+
+locale webrunner en-GB en-GB/
+locale branding en-GB en-GB/branding/
+locale webapp en-GB en-GB/webapp/
+
+locale webrunner es-ES es-ES/
+locale branding es-ES es-ES/branding/
+locale webapp es-ES es-ES/webapp/
+
+locale webrunner it it/
+locale branding it it/branding/
+locale webapp it it/webapp/
+
+locale webrunner ja ja/
+locale branding ja ja/branding/
+locale webapp ja ja/webapp/
+
+locale webrunner ko ko/
+locale branding ko ko/branding/
+locale webapp ko ko/webapp/
+
+locale webrunner nl nl/
+locale branding nl nl/branding/
+locale webapp nl nl/webapp/
+
+locale webrunner pl pl/
+locale branding pl pl/branding/
+locale webapp pl pl/webapp/
+
+locale webrunner pt-BR pt-BR/
+locale branding pt-BR pt-BR/branding/
+locale webapp pt-BR pt-BR/webapp/
+
+locale webrunner ru ru/
+locale branding ru ru/branding/
+locale webapp ru ru/webapp/
+
+locale webrunner sv sv/
+locale branding sv sv/branding/
+locale webapp sv sv/webapp/
+
+locale webrunner zh-CN zh-CN/
+locale branding zh-CN zh-CN/branding/
+locale webapp zh-CN zh-CN/webapp/
+
+locale webrunner zh-HK zh-HK/
+locale branding zh-HK zh-HK/branding/
+locale webapp zh-HK zh-HK/webapp/
+

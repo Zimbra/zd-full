@@ -1,0 +1,18 @@
+/*
+ * 
+ */
+-->
+<zimlet name="com_zdesktop_survey" version="1.0" label="${msg.label}" description="${msg.description}">
+    <include>com_zdesktop_survey.js</include>
+    <handlerObject>ZmSurveyZimlet</handlerObject>
+	<userProperties>
+		<!-- Number of seconds to wait before showing the survey (default 3 days) -->
+		<property type="string" name="ZDSurveyZimlet_InitialWaitSeconds" value="259200"/>	
+		
+		<!-- Number of seconds to to wait after "Remind Me Later" button is pressed (default 7 days) -->
+		<property type="string" name="ZDSurveyZimlet_RemindMeInSeconds" value="604800"/>
+		
+		<!-- Survey URL -->
+		<property type="string" name="ZDSurveyZimlet_SurveyURL" value="https://www.surveymonkey.com/s/ZimbraDesktop"/>	
+	</userProperties>
+</zimlet>

@@ -1,0 +1,6 @@
+#!/bin/bash
+# 
+# 
+# 
+
+exec `dirname $0`/zmjava com.zimbra.cs.lmtpserver.utils.LmtpInject "$@"

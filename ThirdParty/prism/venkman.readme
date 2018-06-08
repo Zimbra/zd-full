@@ -1,0 +1,23 @@
+Install And Run Venkman JavaScript Debugger for Zimbra Desktop
+==============================================================
+
+1) Start Zimbra Desktop
+
+2) Shift-F6 to bring out status bar
+
+3) Click on "gear" icon -> Tools -> Add On -> Install...
+
+4) Select javascript_debugger-0.9.87.4.xpi to install 
+
+5) Quit Zimbra Desktop
+
+6) Run Zimbra Desktop from command line, with -venkman argument:
+
+  (assuming default installation paths)
+
+  Mac: 
+    /Users/<user>/Library/Zimbra Desktop/Zimbra Desktop.app/Contents/MacOS/prism -venkman
+
+  Windows:
+   C:\Program Files\Zimbra\Zimbra Desktop\win32\prism\zdclient.exe -venkman -override <data root>\zdesktop.webapp\override.ini
+

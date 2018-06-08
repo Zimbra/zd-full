@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+  <classpathentry kind="src" path="src/java"/>
+  <classpathentry kind="src" output="build/test-classes" path="src/java-test"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry combineaccessrules="false" kind="src" path="/ZimbraCommon"/>
+  <classpathentry kind="lib" path="/ZimbraCommon/jars/junit-4.8.2.jar"/>
+  <classpathentry kind="lib" path="/ZimbraCommon/jars/commons-httpclient-3.1.jar" sourcepath="/ZimbraCommon/jars-src/commons-httpclient-3.1-src.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:platform:/resource/ZimbraCommon/jars-javadoc/commons-httpclient-3.1-javadoc.zip!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="/ZimbraCommon/jars/dom4j-1.5.2.jar" sourcepath="/ThirdParty/dom4j-1.5.2/src/java">
+    <attributes>
+      <attribute name="javadoc_location" value="http://www.dom4j.org/dom4j-1.5.2/apidocs/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="/ZimbraCommon/jars/guava-r09.jar" sourcepath="/ZimbraCommon/jars-src/guava-src-r09.zip">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:platform:/resource/ZimbraCommon/jars-javadoc/guava-r09-javadoc.zip!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="/ZimbraCommon/jars/log4j-1.2.16.jar" sourcepath="/ZimbraCommon/jars-src/log4j-1.2.16-sources.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:platform:/resource/ZimbraCommon/jars-javadoc/log4j-1.2.16-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="/ZimbraCommon/jars/apache-log4j-extras-1.0.jar" sourcepath="/ZimbraCommon/jars-src/apache-log4j-extras-1.0-sources.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:platform:/resource/ZimbraCommon/jars-javadoc/apache-log4j-extras-1.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="output" path="build/classes"/>
+</classpath>

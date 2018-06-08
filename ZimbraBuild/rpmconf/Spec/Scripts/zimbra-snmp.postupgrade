@@ -1,0 +1,18 @@
+#!/bin/bash
+# 
+# 
+# 
+
+if [ -L "/opt/zimbra/snmp" ]; then
+  rm -f /opt/zimbra/snmp
+fi
+if [ -L "/opt/zimbra/net-snmp" ]; then
+  rm -f /opt/zimbra/net-snmp
+fi
+ln -s /opt/zimbra/net-snmp-5.6.1.1 /opt/zimbra/snmp
+ln -s /opt/zimbra/net-snmp-5.6.1.1 /opt/zimbra/net-snmp
+
+PKG=`echo ${RECEIPT_PATH} | sed -e 's|.*/\(zimbra-snmp.[^/]*pkg\)/.*|\1|' | sed -e 's/\./-/'`
+D=`date +%s`
+echo "${D}: UPGRADED ${PKG}" >> /opt/zimbra/.install_history
+exit 0

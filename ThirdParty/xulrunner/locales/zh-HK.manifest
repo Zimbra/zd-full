@@ -1,0 +1,19 @@
+override chrome://global/locale/netError.dtd chrome://browser/locale/netError.dtd
+locale passwordmgr zh-HK jar:zh-HK.jar!/locale/zh-HK/passwordmgr/
+locale cookie zh-HK jar:zh-HK.jar!/locale/zh-HK/cookie/
+locale global zh-HK jar:zh-HK.jar!/locale/zh-HK/global/
+override chrome://mozapps/locale/downloads/settingsChange.dtd chrome://browser/locale/downloads/settingsChange.dtd
+override chrome://global/locale/appstrings.properties chrome://browser/locale/appstrings.properties
+locale browser-region zh-HK jar:zh-HK.jar!/locale/browser-region/
+locale autoconfig zh-HK jar:zh-HK.jar!/locale/zh-HK/autoconfig/
+locale global-platform zh-HK jar:zh-HK.jar!/locale/zh-HK/global-platform/
+locale alerts zh-HK jar:zh-HK.jar!/locale/zh-HK/alerts/
+locale pipnss zh-HK jar:zh-HK.jar!/locale/zh-HK/pipnss/
+locale global-region zh-HK jar:zh-HK.jar!/locale/zh-HK/global-region/
+locale reporter zh-HK jar:zh-HK.jar!/locale/zh-HK/reporter/
+locale places zh-HK jar:zh-HK.jar!/locale/zh-HK/places/
+locale branding zh-HK jar:zh-HK.jar!/locale/branding/
+locale mozapps zh-HK jar:zh-HK.jar!/locale/zh-HK/mozapps/
+locale browser zh-HK jar:zh-HK.jar!/locale/browser/
+locale pippki zh-HK jar:zh-HK.jar!/locale/zh-HK/pippki/
+locale necko zh-HK jar:zh-HK.jar!/locale/zh-HK/necko/

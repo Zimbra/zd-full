@@ -1,0 +1,8 @@
+[App]
+Vendor=Zimbra
+Name=Zimbra Desktop
+
+[Environment]
+PRISM_HOME=@install.app.root@\win32\prism
+PRISM_WEBAPP=@install.data.root@\zdesktop.webapp
+XRE_PROFILE_PATH=@install.data.root@\profile

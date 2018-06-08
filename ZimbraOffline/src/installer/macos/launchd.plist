@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>Label</key>
+        <string>com.zimbra.desktop</string>
+        <key>ProgramArguments</key>
+        <array>
+                <string>@install.data.root@/bin/zdesktop</string>
+                <string>start</string>
+                <string>-w</string>
+        </array>
+        <key>RunAtLoad</key>
+        <false/>
+        <key>WorkingDirectory</key>
+        <string>@install.data.root@/log</string>
+        <key>StandardOutPath</key>
+        <string>@install.data.root@/log/zdesktop.out</string>
+        <key>StandardErrorPath</key>
+        <string>@install.data.root@/log/zdesktop.out</string>
+</dict>
+</plist>

@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+# 
+# 
+# 
+
+
+use strict;
+use Migrate;
+my $concurrent = 10;
+
+fixNameColumn();
+
+exit(0);
+
+#####################
+
+sub fixNameColumn($) {
+  my ($group) = @_;
+  my $date = time();
+  my @groups = Migrate::getMailboxGroups();
+  my @sql = ();
+  foreach my $group (@groups) {
+    my $sql = <<FIX_NAME_COLUMN_EOF;
+UPDATE IGNORE $group.mail_item
+SET subject = name
+WHERE name IS NOT NULL and subject IS NULL;
+FIX_NAME_COLUMN_EOF
+    push(@sql,$sql);
+  }
+  Migrate::runSqlParallel($concurrent,@sql);
+}

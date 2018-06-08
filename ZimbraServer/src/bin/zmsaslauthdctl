@@ -1,0 +1,120 @@
+#!/bin/bash
+# 
+# 
+# 
+
+if [ x`whoami` != xzimbra ]; then
+    echo Error: must be run as zimbra user
+  exit 1
+fi
+
+
+source `dirname $0`/zmshutil || exit 1
+zmsetvars \
+    zimbra_home \
+    zimbra_log_directory
+
+pid=""
+pidfile="${zimbra_home}/cyrus-sasl/state/saslauthd.pid"
+
+rewriteconfig() {
+  ${zimbra_home}/libexec/configrewrite sasl > /dev/null 2>&1
+}
+
+getpid()
+{
+  if [ -f ${pidfile} ]; then
+    pid=$(cat ${pidfile})
+  fi
+}
+
+checkrunning()
+{
+  getpid
+  if [ "x$pid" = "x" ]; then
+    running=0
+  else
+    kill -0 $pid 2> /dev/null
+    if [ $? != 0 ]; then
+      pid=""
+      running=0
+    else
+      running=1
+    fi
+  fi
+}
+
+#
+# Main
+#
+case "$1" in
+  'start')
+    checkrunning
+    echo -n "Starting saslauthd..."
+    if [ $running = 1 ]; then
+      echo "already running."
+      exit 0
+    fi
+    mkdir -p ${zimbra_home}/cyrus-sasl/state
+    if [ x$2 = "x" ]; then
+      rewriteconfig
+    fi
+    ${zimbra_home}/cyrus-sasl/sbin/saslauthd -r -a zimbra 
+    for ((i = 0; i < 30; i++)) do
+      checkrunning
+      if [ $running = 1 ]; then
+        echo "done."
+        exit 0
+      fi
+      sleep 1
+    done
+    echo "failed."
+    exit 1
+    ;;
+
+  'kill'|'stop')
+    checkrunning
+    if [ $running = 0 ]; then
+      echo "saslauthd is not running."
+      exit 0
+    else
+      echo -n "Stopping saslauthd..."
+      for ((i = 0; i < 30; i++)); do
+        kill -0 $pid 2> /dev/null
+        if [ $? != 0 ]; then
+          rm -rf ${pidfile}
+          break
+        fi
+        kill $pid
+        sleep 1
+      done
+    fi
+    if [ -s ${pidfile} ]; then
+      exit 1
+    else
+      echo "done."
+    fi
+    exit 0
+    ;;
+
+  'restart'|'reload')
+    $0 stop
+    $0 start $2
+    ;;
+  
+  'status')
+    checkrunning
+    if [ $running = 1 ]; then
+      echo "saslauthd is running."
+      exit 0
+    else 
+      echo "saslauthd is not running."
+      exit 1
+    fi
+    ;;
+    
+    *)
+        echo "Usage: $0 start|stop|kill|restart|reload|status"
+        exit 1
+        ;;
+esac

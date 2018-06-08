@@ -1,0 +1,7 @@
+#!/bin/bash
+# 
+# 
+# 
+
+chown -R zimbra:zimbra /opt/zimbra/qa
+chmod a+x /opt/zimbra/qa/scripts/*

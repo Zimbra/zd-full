@@ -1,0 +1,8 @@
+<zimletConfig name="com_zimbra_browserperf" version="1.0">
+<!--
+ * 
+-->
+  <global>
+    <property name="allowedDomains">*.liquidsys.com</property>
+  </global>
+</zimletConfig>

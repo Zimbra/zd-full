@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- UpgradeCode must remain constant through all versions of Zimbra Desktop -->
+<?define UpgradeCode="f8836321-20a3-43c8-96e3-5df9ce908691"?>
+
+<?define version="@zd.version@"?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="Zimbra Desktop (64-bit)" Manufacturer="Zimbra" UpgradeCode="$(var.UpgradeCode)" Language="1033" Codepage="1252" Version="$(var.version)">
+
+    <Package Id="*" Description="Zimbra Desktop" Manufacturer="Zimbra" SummaryCodepage="1252" Languages="1033" InstallerVersion="300" Keywords="Installer" Compressed="yes" Platform="x64" />
+    <Media Id="1" Cabinet="Setup_1.cab" EmbedCab="yes" DiskPrompt="CD-ROM #1" CompressionLevel="high" />
+    <Property Id="DiskPrompt" Value="Zimbra Desktop Installation [1]" />
+    <Upgrade Id="$(var.UpgradeCode)">
+      <!-- Detect any newer version of this product -->
+      <UpgradeVersion Minimum="$(var.version)" IncludeMinimum="no" OnlyDetect="yes" Property="NEWER_VERSION_FOUND"/>
+
+      <!-- Detect and remove any older version of this product -->
+      <UpgradeVersion Maximum="$(var.version)" IncludeMaximum="yes" OnlyDetect="no" Property="OLDER_VERSION_FOUND"/>
+    </Upgrade>
+
+    <!-- working around a wix bug: icon id must ends with '.exe' -->
+    <Icon Id="ZD_Installer_Icon.exe" SourceFile="@build.root@\src\installer\resources\launcher_128x128.ico" />
+    <Property Id="ARPPRODUCTICON" Value="ZD_Installer_Icon.exe" />
+    <Property Id="ARPHELPLINK" Value="http://www.zimbra.com/zdesktop" />
+
+    <CustomAction Id="ID10617" Error="Can't downgrade to an older version of Zimbra Desktop." />
+
+    <Property Id="JAVA_CURRENT_VERSION">
+    <RegistrySearch Id="JRE_CURRENT_VERSION_REGSEARCH" Root="HKLM" Key="SOFTWARE\JavaSoft\Java Runtime Environment" Name="CurrentVersion" Type="raw" Win64="yes" />
+    </Property>
+    <Condition Message="Zimbra Desktop (64-bit) requires a 64-bit Java SE Runtime Environment (JRE), which is not installed or is outdated. Please install JRE 1.6 (64-bit) or later."><![CDATA[Installed OR (JAVA_CURRENT_VERSION >= "1.6")]]></Condition>
+
+    <InstallExecuteSequence>
+      <Custom Action="ID10617" After="FindRelatedProducts">NEWER_VERSION_FOUND</Custom>
+      <LaunchConditions Sequence="100">NOT Installed</LaunchConditions>
+      <FindRelatedProducts Sequence="200" />
+      <AppSearch Sequence="300" />
+      <CCPSearch Sequence="400">NOT Installed</CCPSearch>
+      <RMCCPSearch Sequence="600">NOT Installed AND CPP_TEST</RMCCPSearch>
+      <ValidateProductID Sequence="700" />
+      <CostInitialize Sequence="800" />
+      <FileCost Sequence="900" />
+      <IsolateComponents Sequence="990">RedirectedDllSupport</IsolateComponents>
+      <CostFinalize Sequence="1000" />
+      <SetODBCFolders Sequence="1100">NOT Installed</SetODBCFolders>
+      <MigrateFeatureStates Sequence="1200" />
+      <InstallValidate Sequence="1400" />
+      <RemoveExistingProducts Before="InstallInitialize">OLDER_VERSION_FOUND</RemoveExistingProducts>
+      <InstallInitialize Sequence="1500" />
+      <ProcessComponents Sequence="1600" />
+      <UnpublishComponents Sequence="1680" />
+      <UnpublishFeatures Sequence="1800" />
+      <StopServices Sequence="1900">VersionNT</StopServices>
+      <DeleteServices Sequence="1980">VersionNT</DeleteServices>
+      <UnregisterComPlus Sequence="2000" />
+      <SelfUnregModules Sequence="2100" />
+      <UnregisterTypeLibraries Sequence="2200" />
+      <RemoveODBC Sequence="2300" />
+      <UnregisterFonts Sequence="2400" />
+      <RemoveRegistryValues Sequence="2600" />
+      <UnregisterClassInfo Sequence="2700" />
+      <UnregisterExtensionInfo Sequence="2800" />
+      <UnregisterProgIdInfo Sequence="2900" />
+      <UnregisterMIMEInfo Sequence="3000" />
+      <RemoveIniValues Sequence="3100" />
+      <RemoveShortcuts Sequence="3200" />
+      <RemoveEnvironmentStrings Sequence="3300" />
+      <RemoveDuplicateFiles Sequence="3400" />
+      <RemoveFiles Sequence="3500" />
+      <RemoveFolders Sequence="3600" />
+      <CreateFolders Sequence="3700" />
+      <MoveFiles Sequence="3800" />
+      <InstallFiles Sequence="4000" />
+      <DuplicateFiles Sequence="4100" />
+      <PatchFiles Sequence="4200" />
+      <BindImage Sequence="4300" />
+      <CreateShortcuts Sequence="4500" />
+      <RegisterClassInfo Sequence="4600" />
+      <RegisterExtensionInfo Sequence="4700" />
+      <RegisterProgIdInfo Sequence="4800" />
+      <RegisterMIMEInfo Sequence="4900" />
+      <WriteRegistryValues Sequence="5000" />
+      <WriteIniValues Sequence="5100" />
+      <WriteEnvironmentStrings Sequence="5200" />
+      <RegisterFonts Sequence="5300" />
+      <InstallODBC Sequence="5400" />
+      <RegisterTypeLibraries Sequence="5500" />
+      <SelfRegModules Sequence="5600" />
+      <RegisterComPlus Sequence="5700" />
+      <InstallServices Sequence="5800">VersionNT</InstallServices>
+      <StartServices Sequence="5900">VersionNT</StartServices>
+      <RegisterUser Sequence="6000" />
+      <RegisterProduct Sequence="6100" />
+      <PublishComponents Sequence="6200" />
+      <PublishFeatures Sequence="6300" />
+      <PublishProduct Sequence="6400" />
+      <MsiPublishAssemblies Sequence="6500" />
+      <MsiUnpublishAssemblies Sequence="6550" />
+      <InstallFinalize Sequence="6600" />
+      <Custom Action="ID10618" After="FileCost" />
+
+      <!-- ZWixUtils Custom Actions -->
+      <Custom Action="ID10701" After="FindRelatedProducts">(NOT (REMOVE ~= "ALL" OR UPGRADINGPRODUCTCODE)) AND OLDER_VERSION_FOUND</Custom>
+    </InstallExecuteSequence>
+
+    <InstallUISequence>
+      <Custom Action="ID10617" After="FindRelatedProducts">NEWER_VERSION_FOUND</Custom>
+      <Custom Action="ID10618" After="FileCost" />
+    </InstallUISequence>
+
+    <AdvertiseExecuteSequence>
+      <CostInitialize Sequence="800" />
+      <CostFinalize Sequence="1000" />
+      <InstallValidate Sequence="1400" />
+      <InstallInitialize Sequence="1500" />
+      <CreateShortcuts Sequence="4500" />
+      <RegisterClassInfo Sequence="4600" />
+      <RegisterExtensionInfo Sequence="4700" />
+      <RegisterProgIdInfo Sequence="4800" />
+      <RegisterMIMEInfo Sequence="4900" />
+      <PublishComponents Sequence="6200" />
+      <PublishFeatures Sequence="6300" />
+      <PublishProduct Sequence="6400" />
+      <MsiPublishAssemblies Sequence="6500" />
+      <InstallFinalize Sequence="6600" />
+    </AdvertiseExecuteSequence>
+
+    <CustomAction Id="ID10618" Property="TARGETDIR" Value="[APPLICATIONFOLDER]" HideTarget="no" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+
+      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="DesktopFolder" Name="Desktop">
+          <Component Id="ID10619" Guid="5a6c426a-6f4a-42c5-82fe-1e4fc19d82aa" Win64='yes' >
+            <RegistryValue Root="HKCU" Key="SOFTWARE\Zimbra\Zimbra Desktop\Components\ID10619" Type="string" KeyPath="yes" Value="" />
+            <RemoveFolder Id="ID10620" On="uninstall" />
+@desktop.shortcut@
+          </Component>
+        </Directory>
+        <Component Id="ID10621" Guid="6f5dc277-6ebc-4891-9fb6-78e30e79935d" Win64='yes' >
+          <RegistryValue Root="HKCU" Key="SOFTWARE\Zimbra\Zimbra Desktop\Components\ID10621" Type="string" KeyPath="yes" Value="" />
+          <RemoveFolder Id="ID10622" On="uninstall" />
+        </Component>
+        <Directory Id="ProgramMenuDir" Name="Zimbra Desktop">
+          <Component Id="ID10623" Guid="c04e89cb-01bd-4935-a380-099f825636df" Win64='yes' >
+            <RegistryValue Root="HKCU" Key="SOFTWARE\Zimbra\Zimbra Desktop\Components\ID10623" Type="string" KeyPath="yes" Value="" />
+            <RemoveFolder Id="ID10624" On="uninstall" />
+          </Component>
+        </Directory>
+        <Directory Id="StartupFolder" Name="StartupFolder Directory">
+          <Component Id="ID10625" Guid="40453fff-4de1-4e25-96c2-bd425c3aca5c" Win64='yes' >
+            <RegistryValue Root="HKCU" Key="SOFTWARE\Zimbra\Zimbra Desktop\Components\ID10625" Type="string" KeyPath="yes" Value="" />
+            <RemoveFolder Id="ID10626" On="uninstall" />
+          </Component>
+        </Directory>
+      </Directory>
+
+
+      <Directory Id="ProgramFiles64Folder" Name="Program Files Folder">
+        <Directory Id="InstallOrganizationFolder" Name="Zimbra">
+
+          <!-- Root Application Directory: Id="APPLICATIONFOLDER", Name="Zimbra Desktop" -->
+@build.application.folder.contents@
+
+        </Directory>  <!--  InstallOrganizationFolder -->
+
+        <!-- Registry entries for ZimbraMAPI extension -->
+        <Component Id="ID10629" Guid="b76b6050-8869-497b-8d69-5f43fc37715b" Win64='yes' >
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop">
+            <RegistryValue Value="Zimbra Desktop" Type="string" />
+            <RegistryValue Name="DLLPath" Value="[APPLICATIONFOLDER]win64\prism\extensions\mapi@zimbra.com\zimMapi32.dll" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities">
+            <RegistryValue Name="ApplicationDescription" Value="" Type="string" />
+            <RegistryValue Name="ApplicationIcon" Value="[APPLICATIONFOLDER]win64\prism\extensions\mapi@zimbra.com\zimbra.ico,0" Type="string" />
+            <RegistryValue Name="ApplicationName" Value="ZimbraDesktop" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities\FileAssociations">
+            <RegistryValue Name=".eml" Value="ZimbraDesktopEML" Type="string" />
+            <RegistryValue Name=".wdseml" Value="ZimbraDesktopEML" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities\StartMenu">
+            <RegistryValue Name="Mail" Value="Zimbra Desktop" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Capabilities\URLAssociations">
+            <RegistryValue Name="mailto" Value="ZimbraDesktop.Url.mailto" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\DefaultIcon">
+            <RegistryValue Value="[APPLICATIONFOLDER]win64\prism\extensions\mapi@zimbra.com\zimbra.ico,0" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\InstallInfo">
+            <RegistryValue Name="HideIconsCommand" Value="&quot;[APPLICATIONFOLDER]win64\prism\extensions\mapi@zimbra.com\helper.exe&quot; /HideShortcuts" Type="string" />
+            <RegistryValue Name="ShowIconsCommand" Value="&quot;[APPLICATIONFOLDER]win64\prism\extensions\mapi@zimbra.com\helper.exe&quot; /ShowShortcuts" Type="string" />
+            <RegistryValue Name="ReinstallCommand" Value="&quot;[APPLICATIONFOLDER]win64\prism\extensions\mapi@zimbra.com\helper.exe&quot; /SetAsDefaultAppGlobal" Type="string" />
+            <RegistryValue Name="IconsVisible" Value="0" Type="integer" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols" />
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto">
+            <RegistryValue Value="ZimbraDesktop URL" Type="string" />
+            <RegistryValue Name="FriendlyTypeName" Value="ZimbraDesktop URL" Type="string" />
+            <RegistryValue Name="URL Protocol" Value="" Type="string" />
+            <RegistryValue Name="EditFlags" Value="2" Type="integer" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\DefaultIcon">
+            <RegistryValue Value="[APPLICATIONFOLDER]win64\prism\extensions\mapi@zimbra.com\zimbra.ico,0" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\shell" />
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\shell\open" />
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\Protocols\mailto\shell\open\command">
+            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win64\prism\zdclient.exe&quot; -url &quot;%1&quot;" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell" />
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\open" />
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\open\command">
+            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win64\prism\zdclient.exe&quot;" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\properties">
+            <RegistryValue Value="" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\properties\command">
+            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win64\prism\zdclient.exe&quot; -options" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\safemode">
+            <RegistryValue Value="" Type="string" />
+          </RegistryKey>
+          <RegistryKey Root="HKLM" Action="createAndRemoveOnUninstall" Key="SOFTWARE\Clients\Mail\Zimbra Desktop\shell\safemode\command">
+            <RegistryValue Value="&quot;[APPLICATIONFOLDER]win64\prism\zdclient.exe&quot; -safe-mode" Type="string" />
+          </RegistryKey>
+        </Component>
+
+      </Directory>  <!-- PromgramFilesFolder -->
+    </Directory>  <!-- TARGETDIR -->
+
+
+    <Property Id="ApplicationFolderName" Value="Zimbra Desktop" />
+    <Property Id="WIXUI_INSTALLDIR" Value="APPLICATIONFOLDER" />
+    <Property Id="WixAppFolder" Value="WixPerUserFolder" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="@build.root@\build\dist\app\License.rtf" />
+    <WixVariable Id="WixUIBannerBmp" Value="@build.root@\src\installer\winX64\background_banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="@build.root@\src\installer\winX64\background_dialog.bmp" />
+
+    <Feature Id="ID1C787BADDF55E290CC71CB4BDE88B613" Title="Complete" Level="1" Description="The complete package" InstallDefault="local" ConfigurableDirectory="APPLICATIONFOLDER">
+
+@build.component.references@
+
+      <!-- Menu Folder Items -->
+      <ComponentRef Id="ID10619" />
+      <ComponentRef Id="ID10621" />
+      <ComponentRef Id="ID10623" />
+      <ComponentRef Id="ID10625" />
+      <ComponentRef Id="ID10629" />
+    </Feature>
+
+    <CustomAction Id="ID10702" Directory="@zdrun.dir.id@" ExeCommand="[SystemFolder]wscript.exe zdrun.vbs" Execute="immediate" Impersonate="yes" Return="asyncNoWait" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Zimbra Desktop" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+    <UI>
+      <UIRef Id="WixUI_InstallDir" />
+      <UIRef Id="WixUI_ErrorProgressText" />
+      <Publish Dialog="ExitDialog" Control="Finish" Order="1" Event="DoAction" Value="ID10702">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
+    </UI>
+    <Property Id="ALLUSERS" Value="0" />
+    <Condition Message="This product require Windows XP or newer">VersionNT &gt;= 501</Condition>
+
+    <!-- ZWixUtils -->
+    <Binary Id="ID_CD5EDF1B_5835_426b_A76B_BAEE811A1D6A" SourceFile="@build.root@\src\installer\winX64\zwixutils.dll" />
+    <CustomAction Id="ID10701" BinaryKey="ID_CD5EDF1B_5835_426b_A76B_BAEE811A1D6A" DllEntry="ZShutdown" />
+
+  </Product>
+</Wix>

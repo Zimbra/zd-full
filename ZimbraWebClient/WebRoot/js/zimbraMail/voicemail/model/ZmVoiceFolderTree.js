@@ -1,0 +1,70 @@
+/*
+ * 
+ */
+
+/**
+ * Creates an empty voicemail folder tree.
+ * @constructor
+ * @class
+ * This class represents a tree of voicemail folders.
+ * 
+ * @author Dave Comfort
+ */
+ZmVoiceFolderTree = function() {
+	ZmTree.call(this, ZmOrganizer.VOICE);
+};
+
+ZmVoiceFolderTree.prototype = new ZmTree;
+ZmVoiceFolderTree.prototype.constructor = ZmFolderTree;
+
+// Public Methods
+
+ZmVoiceFolderTree.prototype.toString =
+function() {
+	return "ZmVoiceFolderTree";
+};
+
+/**
+ * Loads the folder or the zimlet tree.
+ */
+ZmVoiceFolderTree.prototype.loadFromJs =
+function(rootObj, phone) {
+	this.root = ZmVoiceFolderTree.createFromJs(null, rootObj, this, phone);
+};
+
+/**
+ * Generic function for creating an organizer. Handles any organizer type that comes
+ * in the folder list.
+ * 
+ * @param parent		[ZmFolder]		parent folder
+ * @param obj			[object]		JSON with folder data
+ * @param tree			[ZmFolderTree]	containing tree
+ */
+ZmVoiceFolderTree.createFromJs =
+function(parent, obj, tree, phone) {
+	if (!(obj && obj.id)) return;
+
+	var params = {
+		id: obj.id,
+		name: obj.name,
+		phone: phone,
+		callType: obj.name || ZmVoiceFolder.ACCOUNT,
+		view: obj.view,
+		numUnread: obj.u,
+		numTotal: obj.n,
+		parent: parent,
+		tree: tree
+	};
+	var folder = new ZmVoiceFolder(params);
+	if (parent) {
+		parent.children.add(folder);
+	}
+
+	if (obj.folder) {
+		for (var i = 0, count = obj.folder.length; i < count; i++) {
+			ZmVoiceFolderTree.createFromJs(folder, obj.folder[i], tree, phone);
+		}
+	}
+
+	return folder;
+};

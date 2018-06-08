@@ -1,0 +1,1 @@
+This is not the location of the ZD OSL.  See ZimbraOffline/src/installer/open_source_licenses.txt

@@ -1,0 +1,1 @@
+XULRunner localization files in this directory were extracted from Linux installation packages of Firefox 3.6.8.

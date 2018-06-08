@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+
+<?xml-stylesheet href="chrome://global/skin/global.css"?>
+<?xml-stylesheet href="chrome://mozapps/content/preferences/preferences.css"?>
+<?xml-stylesheet href="chrome://webrunner/skin/preferences/preferences.css"?>
+
+<!-- XXX This should be in applications.xul, but bug 393953 means putting it
+   - there causes the Applications pane not to work the first time you open
+   - the Preferences dialog in a browsing session, so we work around the problem
+   - by putting it here instead.
+   -->
+<!-- <?xml-stylesheet href="chrome://browser/content/preferences/handlers.css"?>
+<?xml-stylesheet href="chrome://browser/skin/preferences/applications.css"?> -->
+
+<!DOCTYPE prefwindow [
+<!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd">
+<!ENTITY % preferencesDTD SYSTEM "chrome://webrunner/locale/preferences/preferences.dtd">
+%brandDTD;
+%preferencesDTD;
+]>
+
+
+<prefwindow type="prefwindow"
+            id="BrowserPreferences"
+            windowtype="Browser:Preferences"
+            onload="WebRunnerPrefs.init()"
+            ondialoghelp="openPrefsHelp()"
+            title="&prefWindow.titleWin;"
+            xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+            style="&prefWin.styleWin2;">
+
+<script type="application/javascript" src="chrome://webrunner/content/preferences/preferences.js"/>
+
+    <stringbundle id="bundlePreferences"
+                  src="chrome://webrunner/locale/preferences/preferences.properties"/>
+
+    <prefpane id="paneContent" label="&paneContent.title;"
+              src="chrome://webrunner/content/preferences/content.xul"/>
+    <prefpane id="paneAdvanced" label="&paneAdvanced.title;"
+              src="chrome://webrunner/content/preferences/connection.xul"/>
+
+</prefwindow>
+

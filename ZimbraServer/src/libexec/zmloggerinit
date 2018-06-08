@@ -1,0 +1,36 @@
+#!/bin/bash
+# 
+# 
+# 
+
+#
+if [ x`whoami` != "xzimbra" ]; then
+  echo "Error: must be run as user zimbra"
+  exit 1
+fi
+
+umask 027
+source `dirname $0`/../bin/zmshutil || exit 1
+zmsetvars \
+        logger_data_directory
+
+# Get the root directory for the logger db data and construct directory name to move old data to
+logger_data_dir_base="`dirname ${logger_data_directory}`"
+backup_logger_dir="`dirname ${logger_data_dir_base}`/`basename ${logger_data_dir_base}`-`date +%Y%m%d.%H%M`"
+tmp_logger_dir="`dirname ${logger_data_dir_base}`/`basename ${logger_data_dir_base}`-tmp"
+
+# Make the switchout action as atomic as possible.  So, prep new dir structures in "tmp" root logger data dir first.
+mkdir -p ${tmp_logger_dir}/data/rrds ${tmp_logger_dir}/work
+chmod 750 ${tmp_logger_dir}
+chmod 755 ${tmp_logger_dir}/work
+chmod 775 ${tmp_logger_dir}/data
+chmod 750 ${tmp_logger_dir}/data/rrds
+cp ${logger_data_dir_base}/work/*.gif ${tmp_logger_dir}/work/.
+
+# Stop zmlogger, shuffle directories around, and restart zmlogger
+zmloggerctl stop
+mv ${logger_data_dir_base} ${backup_logger_dir}
+mv ${tmp_logger_dir} ${logger_data_dir_base}
+zmloggerctl start
+
+exit 0

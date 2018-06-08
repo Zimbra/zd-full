@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+
+<!--  -->
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://webrunner/skin/" type="text/css"?>
+
+<!DOCTYPE window [
+<!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd">
+%brandDTD;
+<!ENTITY % webrunnerDTD SYSTEM "chrome://webrunner/locale/webrunner.dtd">
+%webrunnerDTD;
+]>
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        id="webrunner"
+        windowtype="navigator:browser"
+        title="&app.title;"
+        width="900" height="700"
+        onclose="return WebRunner.tryClose();"
+        >
+
+  <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
+  <script type="application/x-javascript" src="chrome://global/content/printUtils.js"/>
+  <script type="application/x-javascript" src="chrome://global/content/inlineSpellCheckUI.js"/>
+  <script type="application/x-javascript" src="chrome://webrunner/content/webrunner.js"/>
+
+  <commandset id="cmdset_main">
+    <command id="cmd_cut" label="&cut.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_copy" label="&copy.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_copyLink" label="&copylink.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_paste" label="&paste.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_delete" label="&delete.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_selectAll" label="&selectAll.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_prefs" label="&prefs.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_print" label="&print.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_pageSetup" label="&pageSetup.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_about" label="&about.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_back" label="&back.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_forward" label="&forward.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_home" label="&home.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_reload" label="&reload.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_close" label="&close.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_quit" label="&quit.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_console" label="&console.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_install" label="&install.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_addons" label="&addons.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_zoomIn" label="&zoomIn.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_zoomOut" label="&zoomOut.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_zoomReset" label="&zoomReset.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_fullScreen" label="&fullScreen.label;"   oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_find" label="&findOnCmd.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_findNext" label="&findNextCmd.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_findPrevious" label="&findPreviousCmd.label;" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_sb" label="Toggle Statusbar" oncommand="WebRunner.doCommand(this.id);"/>
+    <command id="cmd_clearcache" label="Clear Cache" oncommand="WebRunner.doCommand(this.id);"/>
+  </commandset>
+
+  <keyset id="keyset_main">
+    <key id="key_back" class="nav" modifiers="alt" keycode="VK_LEFT" command="cmd_back"/>
+    <key id="key_forward" class="nav" modifiers="alt" keycode="VK_RIGHT" command="cmd_forward"/>
+    <key id="key_home" class="nav" modifiers="alt" keycode="VK_HOME" command="cmd_home"/>
+    <key id="key_reload" class="nav" keycode="VK_F5" command="cmd_reload"/>
+    <key id="key_close" modifiers="accel" key="w" command="cmd_close"/>
+    <key id="key_quit" modifiers="accel" key="q" command="cmd_quit"/>
+    <key id="key_print" modifiers="accel" key="p" command="cmd_print"/>
+    <key id="key_fullScreen" keycode="VK_F11" command="cmd_fullScreen"/>
+    <key id="key_zoomIn" key="&zoomIn.commandkey;" modifiers="&zoomIn.modifiers;" command="cmd_zoomIn"/>
+    <key                 key="&zoomIn.commandkey2;" modifiers="&zoomIn.modifiers;" command="cmd_zoomIn"/>
+    <key id="key_zoomOut" key="&zoomOut.commandkey;" modifiers="&zoomOut.modifiers;" command="cmd_zoomOut"/>
+    <key id="key_zoomReset" key="&zoomReset.commandkey;" modifiers="&zoomReset.modifiers;" command="cmd_zoomReset"/>
+    <key id="key_find" key="&findOnCmd.commandkey;" command="cmd_find" modifiers="accel"/>
+    <key id="key_findNext" key="&findNextCmd.commandkey;" command="cmd_findNext" modifiers="accel"/>
+    <key id="key_findPrevious" key="&findNextCmd.commandkey;" command="cmd_findPrevious" modifiers="accel,shift"/>
+    <key keycode="&findNextCmd.commandkey2;" command="cmd_findNext"/>
+    <key keycode="&findNextCmd.commandkey2;"  command="cmd_findPrevious" modifiers="shift"/>
+    <key id="key_sb" modifiers="shift" keycode="VK_F6" command="cmd_sb"/>
+    <key id="key_clearcache" modifiers="shift" keycode="VK_F5" command="cmd_clearcache"/>
+  </keyset>
+
+  <popupset id="popupset_main">
+    <menupopup id="popup_content">
+      <menuitem id="menuitem_noSuggestions" disabled="true" label="&noSuggestions.label;"/>
+      <menuitem id="menuitem_addToDictionary" label="&addToDictionary.label;" oncommand="InlineSpellCheckerUI.addToDictionary();"/>
+      <menuseparator id="menusep_spellcheck"/>
+      <menuitem id="menuitem_cut" command="cmd_cut"/>
+      <menuitem id="menuitem_copy" command="cmd_copy"/>
+      <menuitem id="menuitem_paste" command="cmd_paste"/>
+      <menuitem id="menuitem_delete" command="cmd_delete"/>
+      <menuseparator/>
+      <menuitem id="menuitem_selectAll" command="cmd_selectAll"/>
+      <menuseparator id="menusep_copyLink"/>
+      <menuitem id="menuitem_copyLink" command="cmd_copyLink"/>
+    </menupopup>
+
+    <tooltip id="tooltip_content"/>
+
+    <panel id="popup_autocomplete" type="autocomplete" noautofocus="true"/>
+  </popupset>
+
+  <toolbox id="toolbox_main">
+    <menubar id="menu_main" style="min-height: 0px;">
+      <menu id="menu_file" label="&file.label;">
+        <menupopup>
+          <menuitem id="aboutName" label="&about.label;" oncommand="WebRunner.doCommand('cmd_about');"/>
+          <menuitem id="menu_FileQuitItem" label="&quit.label;" key="key_quit" oncommand="WebRunner.doCommand('cmd_quit');"/>
+        </menupopup>
+      </menu>
+    </menubar>
+    <toolbar id="toolbar_main" mode="icons">
+      <toolbarbutton id="tool_back" tooltiptext="&back.label;" command="cmd_back"/>
+      <toolbarbutton id="tool_forward" tooltiptext="&forward.label;" command="cmd_forward"/>
+      <toolbarseparator/>
+      <toolbarbutton id="tool_home" tooltiptext="&home.label;" command="cmd_home"/>
+      <toolbarbutton id="tool_reload" tooltiptext="&reload.label;" command="cmd_reload"/>
+      <toolbarseparator/>
+      <toolbaritem id="urlbar-container" flex="1">
+        <textbox id="urlbar" flex="1" readonly="true"/>
+      </toolbaritem>
+    </toolbar>
+  </toolbox>
+
+  <hbox id="box_main" flex="1">
+    <vbox id="box_sidebar" width="200">
+      <hbox class="sidebarheader">
+        <description id="label_sidebar" value="" flex="1"/>
+      </hbox>
+      <browser id="browser_sidebar" flex="1" type="content" src="about:blank" tooltip="tooltip_content"/>
+    </vbox>
+
+    <splitter id="splitter_sidebar" collapse="before" state="collapsed">
+      <grippy/>
+    </splitter>
+
+    <vbox id="box_content" flex="1">
+      <notificationbox id="notifications" flex="1">
+        <browser id="browser_content"
+                 flex="1"
+                 type="content-primary"
+                 context="popup_content"
+                 tooltip="tooltip_content"
+                 autocompletepopup="popup_autocomplete" />
+      </notificationbox>
+    </vbox>
+  </hbox>
+
+  <script>
+    WebRunner.showSplashScreen();
+  </script>
+
+  <findbar id="findbar" browserid="browser_content"/>
+
+  <statusbar id="statusbar">
+    <statusbarpanel id="status" label="" crop="end" flex="1"/>
+    <progressmeter id="progress" mode="determined" value="0" hidden="true"/>
+    <statusbarpanel id="security" class="statusbarpanel-iconic-text"/>
+    <toolbarbutton id="button_commands" type="menu" tooltiptext="&commands.tooltip;">
+      <menupopup id="popup_main">
+		<!--
+        <menuitem id="menuitem_prefs" command="cmd_prefs"/>
+		-->
+        <menuitem id="menuitem_print" command="cmd_print"/>
+        <menuitem id="menuitem_pageSetup" command="cmd_pageSetup"/>
+        <!--
+        <menuseparator/>
+        <menuitem id="menuitem_install" command="cmd_install"/>
+        -->
+        <menuseparator/>
+        <menu id="menu_tools" label="&tools.label;">
+          <menupopup id="popup_tools">
+            <menuitem id="menuitem_addons" command="cmd_addons"/>
+            <menuseparator/>
+            <menuitem id="menuitem_console" command="cmd_console"/>
+          </menupopup>
+        </menu>
+        <menuseparator/>
+        <menuitem id="menuitem_about" command="cmd_about"/>
+      </menupopup>
+    </toolbarbutton>
+  </statusbar>
+
+</window>

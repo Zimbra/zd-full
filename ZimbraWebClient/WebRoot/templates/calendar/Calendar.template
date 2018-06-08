@@ -1,0 +1,230 @@
+<template id='calendar.Calendar#calendar_appt' width='10' height='7'>
+	<div id='${id}_body' class='appt_body ${bodyColor} ${boxBorder}'>
+		<table cellspacing=0 cellpadding=0 style='width:100%; height:100%;${bodyStyle}'>
+		    <$ if(data.headerStyle) {$>
+			<tr style='${headerStyle}'>
+			<$ }else { $>
+            <tr class='${headerColor}'>			
+			<$ } $>
+                <td class="${showAsColor}" width=4 rowspan="<$= data.hideTime ? 2 : 3 $>"></td>
+				<td class='appt${newState}_time' id='${id}_st'>
+					<$ if (data.icon) { $>
+						<div class='appt_icon'><$= AjxImg.getImageHtml(data.icon, "width:16") $></div>
+					<$ } $>
+					<$ if (data.tagIcon) { $>
+						<div class='appt_icon'><$= AjxImg.getImageHtml(data.tagIcon, "width:16") $></div>
+					<$ } $>
+                    <$ if(data.isDraft) { $>
+                        <div class='appt_icon'><$= AjxImg.getImageHtml("Edit", "width:16") $></div>
+                    <$ } $>
+					${starttime}
+				</td>
+			</tr>
+			<tr valign=top>
+				<td class=appt${newState}_name style='height:100%'>
+					${name}
+					<$ if (data.location) { $>
+						<BR>${location}
+					<$ } $>
+				</td>
+			</tr>
+			<$ if(!data.hideTime) {$>			
+			<tr>
+				<td class=appt_end_time id='${id}_et'>${endtime}</td>
+			</tr>
+			<$ } $>
+		</table>
+	</div>
+</template>
+
+<template id='calendar.Calendar#calendar_appt_bottom_only' width='10' height='7'>
+	<div id='${id}_body' class='appt_body ${bodyColor} ${boxBorder}'>
+		<table cellspacing=0 cellpadding=0 style='width:100%;height:100%;${bodyStyle}'>
+			<tr valign=top>
+				<td width='4px' class='${showAsColor}' ></td>			
+				<td class=appt${newState}_name style='height:100%'>
+					${name}
+					<$ if (data.location) { $>
+						${location}
+					<$ } $>
+				</td>
+			</tr>
+			<tr>
+				<td colspan=2 class=appt_end_time id='${id}_et'>${endtime}</td>
+			</tr>
+		</table>
+	</div>
+</template>
+
+<template id='calendar.Calendar#calendar_appt_30' width='4' height='4'>
+	<div id='${id}_body' class='appt_30_body  ${headerColor} ${boxBorder}'>
+		<table width=100% cellspacing=0 cellpadding=0 style='width:100%;height:100%;${headerStyle}'>
+			<tr>
+				<td width='4px' class='${showAsColor}' ></td>
+				<td class=appt_30${newState}_name>${name}</td>
+				<$ if (data.tagIcon) { $>
+					<td valign=top width=16><$= AjxImg.getImageHtml(data.tagIcon, "width:16") $></td>
+				<$ } $>
+				<$ if (data.icon) { $>
+					<td valign=top width=16><$= AjxImg.getImageHtml(data.icon, "width:16") $></td>
+				<$ } $>
+			</tr>
+		</table>
+	</div>
+</template>
+
+<template id='calendar.Calendar#calendar_appt_allday' width='4' height='4'>
+	<div id='${id}_body' class='appt_allday_body ${headerColor} ${boxBorder}'>
+		<table width=100% cellspacing=0 cellpadding=0 style='width:100%;height:100%;${headerStyle}'>
+			<tr>
+				<td width='4px' class='${showAsColor}' ></td>
+				<td class=appt_allday${newState}_name>
+					<$ if (data.icon) { $>
+						<div class='appt_icon'><$= AjxImg.getImageHtml(data.icon, "width:16") $></div>
+					<$ } $>
+					<$ if (data.tagIcon) { $>
+						<div class='appt_icon'><$= AjxImg.getImageHtml(data.tagIcon, "width:16") $></div>
+					<$ } $>
+					${name}
+				</td>
+			</tr>
+		</table>
+	</div>
+</template>
+
+<template id='calendar.Calendar#calendar_fb_appt' width='4' height='4'>
+	<div id='${id}_body' class='appt_allday_body'>
+		<div style="padding:3px;overflow:hidden;height:21px;">${name}</div>
+	</div>
+</template>
+
+<template id='calendar.Calendar#month_appt'>
+	<$ var continues = data.multiday && !data.last; $>
+	<$ var continued = data.multiday && !data.first; $>
+	<$ var style = continues ? "padding-right:14px;" : ""; $>
+	<table border=0 width=100% cellspacing=0 cellpadding=2 style='${headerStyle}'>
+	<tr>
+		<td width='1px' class='${showAsColor}' ></td>
+		<td><div style='overflow:hidden; <$=style$>'>
+				<$ if (continues) { $>
+					<div class='calendar_month_day_item_continues'>&raquo;</div>
+				<$ } $>
+				<$ if (continued) { $>
+					&laquo;&nbsp;
+				<$ } else { $>
+					&nbsp;${duration}
+				<$ } $>
+				<$= AjxStringUtil.htmlEncode(data.appt.getName()) $>
+			</div>
+		</td>
+	</tr>
+	</table>
+</template>
+
+<template id='calendar.Calendar#TypeDialog'>
+	<div style='width:274px' id='${id}_question'></div><p>
+	<table align=center border=0 width=1%>
+		<tr>
+			<td width=1%><input checked value='1' type='radio' id='${id}_defaultRadio' name='${id}_instSeriesName'></td>
+			<td style='white-space:nowrap' id='${id}_instanceMsg'></td>
+		</tr>
+		<tr>
+			<td width=1%><input value='2' type='radio' name='${id}_instSeriesName'></td>
+			<td style='white-space:nowrap' id='${id}_seriesMsg'></td>
+		</tr>
+	</table>
+</template>
+
+<template id='calendar.Calendar#ApptDragProxy'>
+	<div class='${color}'>
+		<table>
+			<tr>
+				<td rowspan=2><$= AjxImg.getImageHtml("Appointment") $></td>
+				<td><b>${shortDate}</b> ${dur}</td>
+			</tr>
+			<tr>
+				<td><b>${apptName}</b></td>
+			</tr>
+		</table>
+	</div>
+</template>
+
+<template id='calendar.Calendar#ListViewFolder'>
+	<table cellpadding=0 cellspacing=0 border=0>
+		<tr>
+			<td width=16><$= AjxImg.getImageHtml(data.folder.getIconWithColor()) $></td>
+			<td width=100%>${folderName}</td>
+		</tr>
+	</table>
+</template>
+
+<template id='calendar.Calendar#ListViewSearchBar'>
+	<table border=0 cellpadding=0 cellspacing=0 width=100%>
+		<tr><td id="${id}_searchBarControls"></td>
+            <td id="${id}_searchBarDate" class='calendar_date_search-dateRange'></td>
+        </tr>
+    </table>
+</template>
+
+<template id='calendar.Calendar#ListViewSearchBarInput'>
+	<table border=0 cellpadding=0 cellspacing=0 width=100%>
+		<tr><td class='calendar_date_search_td'><input autocomplete='off' style='height:22px;' type='text' size=14 id='${id}DateInput' value='${value}'></td>
+			<td id='${id}MiniCal'></td>
+		</tr>
+	</table>
+</template>
+
+<template id='calendar.Calendar#ReminderDialogRow'>
+	<$ if (data.needSep) { $>
+		<tr name="rdsep">
+			<td colspan=3><div class="horizSep"></div></td>
+		</tr>
+	<$ } $>
+	<tr id='${rowId}'>
+		<td width=100% valign=top>
+			<span id='${reminderNameContainerId}'><b>${reminderName}</b></span><br>
+			<span id='${reminderDescContainerId}'>
+			<$ if (data.durationText != "") { $>
+			    <$= ZmMsg.whenLabel $> ${durationText}<br>
+            <$ } $>
+
+			<$ if (data.organizer) { $>
+				<$= ZmMsg.organizerLabel $> ${organizer}<br>
+			<$ } $>
+
+			<$ if (data.calName) { $>
+				<$ if(data.type == ZmItem.APPT) { $>
+				    <$= ZmMsg.calendarLabel $> ${calName}<br>
+				<$ } else if (data.type == ZmItem.TASK) { $>
+                    <$= ZmMsg.tasks $>: ${calName}<br>
+				<$ } $>     
+			<$ } $>
+
+			<$ if (data.accountName) { $>
+				<$= ZmMsg.accountLabel $> ${accountName}<br>
+			<$ } $>
+
+			<$ if (data.location) { $>
+				<$= ZmMsg.locationLabel $> ${location}<br>
+			<$ } $>
+			</span>
+		</td>
+		<td valign=top align=right>
+			<table border=0 cellpadding=1 cellspacing=1>
+				<tr>
+					<td valign=top align=right>
+						<table border=0>
+							<tr>
+								<td valign=top id='${openBtnId}'></td>
+								<td valign=top id='${dismissBtnId}'></td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td style='white-space:nowrap;' align='right' id='${deltaId}'></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</template>

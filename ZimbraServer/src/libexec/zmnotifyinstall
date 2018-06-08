@@ -1,0 +1,41 @@
+#!/usr/bin/perl
+# 
+# 
+# 
+
+use strict;
+
+use lib "/opt/zimbra/zimbramon/lib";
+use Zimbra::Util::Common;
+
+use LWP::UserAgent;
+
+my $baseDir = "/opt/zimbra";
+
+my $version = $ARGV[0];
+my $email = $ARGV[1];
+
+my $URL = "http://www.zimbra.com/cgi-bin/notify.cgi?VER=$version&MAIL=$email";
+
+print "Notifying Zimbra of installation via $URL\n\n";
+
+# Create a user agent object
+my $ua = LWP::UserAgent->new;
+$ua->agent("ZimbraInstaller/0.1 ");
+
+# Create a request
+my $req = HTTP::Request->new(GET => "$URL");
+
+# Pass request to the user agent and get a response back
+my $res = $ua->request($req);
+
+# Check the outcome of the response
+if ($res->is_success) {
+	print "Notification complete\n\n";
+} else {
+	print "ERROR: Notification failed ";
+	print $res->{status_line};
+	print "\n";
+}
+
+exit (0);

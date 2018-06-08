@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * 
+-->
+
+<attrs>
+
+<attr name="offlineAccountsOrder" type="string" cardinality="single" optionalIn="account">
+  <desc>visual order of all accounts in desktop UI</desc>
+</attr>
+
+<attr name="offlineModifiedAttrs" type="string" cardinality="multi" optionalIn="account,dataSource,identity">
+  <desc>internal: set of attributes modified since the last synchronization</desc>
+</attr>
+
+<attr name="offlineDeletedIdentity" type="id" cardinality="multi" optionalIn="account">
+  <desc>internal: set of ids of identities deleted since the last synchronization</desc>
+</attr>
+
+<attr name="offlineDeletedDataSource" type="id" cardinality="multi" optionalIn="account">
+  <desc>internal: set of ids of data sources deleted since the last synchronization</desc>
+</attr>
+
+<attr name="offlineDeletedSignature" type="id" cardinality="multi" optionalIn="account">
+  <desc>internal: set of ids of signatures deleted since the last synchronization</desc>
+</attr>
+
+<attr name="offlineRemotePassword" type="string" cardinality="single" requiredIn="account">
+  <desc>the account's password on the remote server</desc>
+</attr>
+
+<attr name="offlineRemoteServerUri" type="string" cardinality="single" requiredIn="account" flags="accountInfo">
+  <desc>base URI of the remote Zimbra server</desc>
+</attr>
+
+<attr name="offlineWebappUri" type="string" cardinality="single" optionalIn="account" flags="accountInfo">
+  <desc>prism webapp uri</desc>
+</attr>
+
+<attr name="offlineRemoteHost" type="string" cardinality="single" requiredIn="account">
+  <desc>host of the remote Zimbra server</desc>
+</attr>
+
+<attr name="offlineRemotePort" type="port" cardinality="single" requiredIn="account">
+  <desc>port of the remote Zimbra server</desc>
+</attr>
+
+<attr name="offlineRemoteSsl" type="boolean" cardinality="single" requiredIn="account">
+  <desc>whether use ssl to access remote Zimbra server</desc>
+</attr>
+
+<attr name="offlineRemoteServerVersion" type="string" cardinality="single" optionalIn="account" flags="accountInfo">
+  <desc>version number of remote Zimbra server</desc>
+</attr>
+
+<attr name="offlineProxyHost" type="string" cardinality="single" optionalIn="account">
+  <desc>proxy server hostname</desc>
+</attr>
+
+<attr name="offlineProxyPort" type="port" cardinality="single" optionalIn="account">
+  <desc>proxy server port</desc>
+</attr>
+
+<attr name="offlineProxyUser" type="string" cardinality="single" optionalIn="account">
+  <desc>proxy server username</desc>
+</attr>
+
+<attr name="offlineProxyPass" type="string" cardinality="single" optionalIn="account">
+  <desc>proxy server password</desc>
+</attr>
+
+<attr name="offlineAccountFlavor" type="string" cardinality="single" optionalIn="account" flags="accountInfo">
+  <desc>Flavor of account type (i.e. Ymail, Gmail, Live, MobileMe, Zimbra, Pop, Imap...)</desc>
+</attr>
+
+<attr name="offlineAccountName" type="string" cardinality="single" optionalIn="account">
+  <desc>A user given name for a Zimbra account</desc>
+</attr>
+
+<attr name="offlineFeatureSmtpEnabled" type="boolean" cardinality="single" optionalIn="account" flags="accountInfo">
+  <desc>whether sending messages from an account is enabled</desc>
+</attr>
+
+<attr name="offlineSyncFreq" type="integer" cardinality="single" optionalIn="account">
+  <desc>Zimbra account sync frequency in seconds, where -1 means manually and 0 means push</desc>
+</attr>
+
+<attr name="offlineSyncStatus" type="enum" value="unknown,offline,online,running,authfail,error" cardinality="single" optionalIn="account">
+  <desc>status of the last sync attempt, unknown means never attempted since server start</desc>
+</attr>
+
+<attr name="offlineLastSync" type="long" cardinality="single" optionalIn="account">
+  <desc>the last time (milli since epoch) this Zimbra account was successfully synced</desc>
+</attr>
+
+<attr name="offlineEnableTrace" type="boolean" cardinality="single" optionalIn="account">
+  <desc>whether enable debug trace of this account</desc>
+</attr>
+
+<attr name="offlineDataSourceType" type="enum" value="pop3,imap" immutable="1" cardinality="single" optionalIn="dataSource">
+  <desc>which type of data source the data source is</desc>
+</attr>
+
+<attr name="offlineDataSourceName" type="string" cardinality="single" optionalIn="account">
+  <desc>name of the sole data source in a data source account</desc>
+</attr>
+
+<attr name="offlineGalAccountId" type="string" cardinality="single" optionalIn="account">
+  <desc>account id of the GAL account associated with a sync account</desc>
+</attr>
+
+<attr name="offlineGalAccountSyncToken" type="string" cardinality="single" optionalIn="account">
+  <desc>sync token from last SyncGal response</desc>
+</attr>
+
+<attr name="offlineGalAccountDataSourceId" type="string" cardinality="single" optionalIn="account">
+  <desc>data source id for gal sync account</desc>
+</attr>
+
+<attr name="zimbraPrefShareContactsInAutoComplete" type="string" cardinality="single" optionalIn="account">
+  <desc>if true, include all contacts of this account in address auto-completion, in other accounts compose window</desc>
+</attr>
+
+<attr name="offlineGalAccountLastFullSync" type="long" cardinality="single" optionalIn="account">
+  <desc>last time (days since epoch) the system did a full sync</desc>
+</attr>
+
+<attr name="offlineGalAccountLastRefresh" type="long" cardinality="single" optionalIn="account">
+  <desc>last time (days since epoch) gal maintenance task was run</desc>
+</attr>
+
+<attr name="offlineGalGroupMembersPopulated" type="boolean" cardinality="single" optionalIn="account">
+  <desc>whether we have populated group member lists for this gal account yet</desc>
+</attr>
+
+<attr name="offlineMountpointProxyAccountId" type="string" cardinality="single" optionalIn="account">
+  <desc>id of the offline acount through which access to mountpoints is proxied</desc>
+</attr>
+
+<attr name="zimbraDataSourceContactSyncEnabled" type="boolean" cardinality="single" optionalIn="dataSource">
+  <desc>whether contact synchronization is enabled</desc>
+</attr>
+
+<attr name="zimbraDataSourceCalendarSyncEnabled" type="boolean" cardinality="single" optionalIn="dataSource">
+  <desc>whether calendar synchronization is enabled</desc>
+</attr>
+
+<attr name="zimbraDataSourceSmtpEnabled" type="boolean" cardinality="single" optionalIn="dataSource">
+  <desc>whether oubound mail sending is allowed in this data source</desc>
+</attr>
+
+<attr name="zimbraDataSourceSmtpHost" type="string" cardinality="single" optionalIn="dataSource">
+  <desc>host of smtp associated with this data source</desc>
+</attr>
+
+<attr name="zimbraDataSourceSmtpPort" type="port" cardinality="single" optionalIn="dataSource">
+  <desc>port number of smtp associated with this data source</desc>
+</attr>
+
+<attr name="zimbraDataSourceSmtpConnectionType" type="enum"  value="cleartext,ssl" cardinality="single" optionalIn="dataSource">
+  <desc>security layer for smtp connection</desc>
+</attr>
+
+<attr name="zimbraDataSourceSmtpAuthRequired" type="boolean" cardinality="single" optionalIn="dataSource">
+  <desc>whether smtp associated with this data source requires authentication</desc>
+</attr>
+
+<attr name="zimbraDataSourceSmtpAuthUsername" type="string" cardinality="single" optionalIn="dataSource">
+  <desc>smtp authentication username</desc>
+</attr>
+
+<attr name="zimbraDataSourceSmtpAuthPassword" type="string" cardinality="single" optionalIn="dataSource">
+  <desc>smtp authentication password</desc>
+</attr>
+
+<attr name="zimbraDataSourceSyncFreq" type="integer" cardinality="single" optionalIn="dataSource">
+  <desc>data source sync frequency in seconds, where -1 means manually and 0 means push</desc>
+</attr>
+
+<attr name="zimbraDataSourceSyncStatus" type="enum" value="unknown,offline,online,running,authfail,error" cardinality="single" optionalIn="dataSource">
+  <desc>status of the last attempt to sync this data source, unknown means never attempted since server start</desc>
+</attr>
+
+<attr name="zimbraDataSourceLastSync" type="long" cardinality="single" optionalIn="dataSource">
+  <desc>the last time (milli since epoch) this data source was successfully synced</desc>
+</attr>
+
+<attr name="zimbraDataSourceSyncAllServerFolders" type="boolean" cardinality="single" optionalIn="dataSource">
+  <desc>whether to auto-enable sync on all server folders</desc>
+</attr>
+
+<attr name="zimbraDataSourceCalendarFolderId" type="string" cardinality="single" optionalIn="dataSource">
+  <desc>root folder for for calendar</desc>
+</attr>
+
+<attr name="zimbraPrefMailtoHandlerEnabled" type="boolean" cardinality="single" optionalIn="account" flags="accountInfo">
+  <desc>whether to register as mailto link handler</desc>
+</attr>
+
+<attr name="zimbraPrefMailtoAccountId" type="string" cardinality="single" optionalIn="account" flags="accountInfo">
+  <desc>the account ID of the account for mailto handling</desc>
+</attr>
+
+<attr name="offlineClientId" type="string" cardinality="single" optionalIn="account">
+  <desc>a unique ID of this client</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineBackupInterval" type="long" cardinality="single" optionalIn="account" callback="com.zimbra.cs.offline.backup.BackupIntervalCallback">
+  <desc>interval to run account backup</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineBackupAccountId" type="string" cardinality="multi" optionalIn="account">
+  <desc>account ID(s) to backup</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineBackupPath" type="string" cardinality="single" optionalIn="account" callback="com.zimbra.cs.offline.backup.BackupPathCallback">
+  <desc>path for backup output</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineBackupKeep" type="integer" cardinality="single" optionalIn="account">
+  <desc>number of backups to keep for each acct</desc>
+</attr>
+
+<attr name="offlineBackupLastSuccess" type="long" cardinality="single" optionalIn="account">
+  <desc>timestamp of last backup success</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineZimletSyncAccountId" type="string" cardinality="single" optionalIn="account">
+  <desc>account ID to sync zimlets with</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineAttrProxyMode" type="string" cardinality="single" optionalIn="account">
+  <desc>Proxy config mode; one of MANUAL, NONE, or SYSTEM</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineHttpProxyHost" type="string" cardinality="single" optionalIn="account">
+  <desc>HTTP/S Proxy hostname; used if mode set to Manual</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineHttpProxyPort" type="long" cardinality="single" optionalIn="account">
+  <desc>HTTP/S Proxy port; used if mode set to Manual</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineHttpProxyUsername" type="string" cardinality="single" optionalIn="account">
+  <desc>HTTP/S Proxy username; used if mode set to Manual</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineHttpProxyPassword" type="string" cardinality="single" optionalIn="account">
+  <desc>HTTP/S Proxy password; used if mode set to Manual</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineSocksProxyHost" type="string" cardinality="single" optionalIn="account">
+  <desc>SOCKS Proxy hostname; used if mode set to Manual</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineSocksProxyPort" type="long" cardinality="single" optionalIn="account">
+  <desc>SOCKS Proxy port; used if mode set to Manual</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineSocksProxyUsername" type="string" cardinality="single" optionalIn="account">
+  <desc>SOCKS Proxy username; used if mode set to Manual</desc>
+</attr>
+
+<attr name="zimbraPrefOfflineSocksProxyPassword" type="string" cardinality="single" optionalIn="account">
+  <desc>SOCKS Proxy password; used if mode set to Manual</desc>
+</attr>
+
+<attr name="zimbraPrefAutoArchiveEnabled" type="boolean" cardinality="single" optionalIn="account" callback="com.zimbra.cs.mailbox.AutoArchivePrefCallback">
+	<desc>To enable or disable auto-archiving</desc>
+</attr>
+
+<attr name="zimbraPrefAutoArchiveNoOfDays" type="integer" cardinality="single" optionalIn="account">
+	<desc>Age of emails in days for auto-archiving</desc>
+</attr>
+
+<attr name="zimbraPrefAutoArchiveFrequency" type="enum" value="on_app_launch,daily,weekly,monthly" cardinality="single" optionalIn="account" callback="com.zimbra.cs.mailbox.AutoArchiveFrequencyCallback">
+	<desc>Auto-archiving frequency</desc>
+</attr>
+
+</attrs>

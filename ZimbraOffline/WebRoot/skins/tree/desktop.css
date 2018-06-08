@@ -1,0 +1,25 @@
+/*
+ * 
+ */
+
+/* Offline-specific styles */
+
+BODY {
+	background: #2d4106 url("img/bg.gif") repeat-x top left;
+}
+
+.ZPanel {
+	background: #6c901d url("img/setup-bkgd-full.gif") no-repeat top left;
+}
+
+.ZPanelLogo {
+	background: url("img/LoginBanner.png") no-repeat top left;
+}
+
+.ZTip a {
+	color: #7f9c3c;
+}
+
+.ZDot {
+	color: #7f9c3c;
+}

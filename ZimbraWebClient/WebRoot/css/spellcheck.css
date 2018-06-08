@@ -1,0 +1,59 @@
+/*
+ * 
+ */
+.TextSpellChecker { /* try to be as close as possible to the textarea */
+	position: relative;
+	@TextArea@
+	@TextArea-normal@
+}
+
+.SpellCheckInputField {
+	position: absolute;
+	@InputField@
+	@FontFamily-fixed@
+	padding: 1px;
+}
+
+.SpellCheckModeDiv {
+	@WarningContainer@
+	@WarningText@
+	@BottomSeparator@
+	@PanelPadding@
+}
+
+.SpellCheckLink {
+	@Anchor-hover@
+	cursor: pointer; 
+}
+
+.SpellCheckModeDiv a:link, 
+.SpellCheckModeDiv a:visited { 
+	@Anchor@ 
+}
+
+.TextSpellChecker, 
+.TextSpellChecker * { 
+	@FontFamily-fixed@
+}
+
+.ZM-SPELLCHECK-MISSPELLED { 
+	border-bottom: 1px dashed; 
+	@WarningContainer@
+	cursor: help; 
+}
+/* USE??? */
+.ZM-SPELLCHECK-MISSPELLED2 { 
+	border-bottom: 1px dashed; 
+	@CriticalContainer@
+	z-index: 10; 
+	cursor: help; 
+}
+.ZM-SPELLCHECK-FIXED { 
+	border-bottom: 1px dashed; 
+	@InfoContainer@
+}
+/* USE??? */
+.ZM-SPELLCHECK-INPROGRESS { 
+	background: #caf; 
+	cursor: help; 
+}

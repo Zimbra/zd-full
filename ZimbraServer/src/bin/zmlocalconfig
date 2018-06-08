@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# 
+#
+#
+# We cannot rely on any config parameters when running zmlocalconfig for obvious
+# chicken and egg reasons. So we just make assumptions about install layout.
+#
+
+ZMROOT=`dirname $0`/..
+ZMROOT=`(cd "${ZMROOT}"; pwd)`
+
+umask 0027
+
+if [ -x "${ZMROOT}/java/bin/java" ]; then
+    java="${ZMROOT}/java/bin/java"
+else
+    java=java
+fi
+
+if [ -f ".hotspot_compiler" ]; then
+  cd $ZMROOT
+fi
+
+case "`uname`" in
+CYGWIN*) PATHSEP=";";;
+*) PATHSEP=":";;
+esac
+
+CP=${ZMROOT}/lib/jars/zimbracommon.jar\
+${PATHSEP}${ZMROOT}/lib/jars/zimbrasoap.jar\
+${PATHSEP}${ZMROOT}/lib/jars/zimbrastore.jar\
+${PATHSEP}${ZMROOT}/lib/jars/zimbra-native.jar\
+${PATHSEP}${ZMROOT}/lib/jars/apache-log4j-extras-1.0.jar\
+${PATHSEP}${ZMROOT}/lib/jars/commons-logging.jar\
+${PATHSEP}${ZMROOT}/lib/jars/commons-cli-1.2.jar\
+${PATHSEP}${ZMROOT}/lib/jars/commons-httpclient-3.1.jar\
+${PATHSEP}${ZMROOT}/lib/jars/commons-codec-1.4.jar\
+${PATHSEP}${ZMROOT}/lib/jars/guava-r09.jar\
+${PATHSEP}${ZMROOT}/lib/jars/dom4j-1.5.2.jar\
+${PATHSEP}${ZMROOT}/lib/jars/log4j-1.2.16.jar\
+${PATHSEP}${ZMROOT}/lib/jars/json.jar\
+${PATHSEP}${ZMROOT}/lib/jars/servlet-api.jar\
+${PATHSEP}${ZMROOT}/lib/jars/jetty-6.1.22.z6.jar
+
+
+java_version=$(${java} -version 2>&1 | grep "java version" | sed -e 's/"//g' | awk '{print $NF}' | awk -F_ '{print $1}')
+if [ x"$java_version" = "x1.6.0" ]; then
+  java_options="-XX:ErrorFile=${ZMROOT}/log"
+else
+  java_options=""
+fi
+
+exec ${java} ${java_options} -client -cp "$CP" \
+    -Djava.library.path=${ZMROOT}/lib -Dzimbra.home="${ZMROOT}" \
+    com.zimbra.cs.localconfig.LocalConfigCLI "$@"

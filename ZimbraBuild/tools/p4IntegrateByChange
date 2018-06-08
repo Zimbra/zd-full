@@ -1,0 +1,154 @@
+#!/usr/bin/perl
+# 
+# 
+# 
+
+# perl script to integrate changes
+
+use Getopt::Std;
+use vars qw'$opt_h $opt_c $opt_p $opt_t $opt_s $opt_v $opt_b';
+
+getopts('hbvc:s:t:p:') || usage();
+if ($opt_h || (!$opt_c || !$opt_t || !$opt_s)) { usage(); }
+
+$opt_p ||= "p4 -c integrate";
+my ($p4) = $opt_p;
+my ($change) = $opt_c;
+my ($verbose) = $opt_v;
+my ($binary) = $opt_b;
+
+# intelligently decipher $opt_t and $opt_s
+my ($valid_s) = 0;
+my ($valid_t) = 0;
+# removing trailing dots
+$opt_t =~ s/\.\.\.$//;
+$opt_s =~ s/\.\.\.$//;
+# remove trailing slash
+$opt_t =~ s/\/$//;
+$opt_s =~ s/\/$//;
+# check for perforce path
+if ($opt_t =~ /^\/\//) {
+   my ($dirs) = `$p4 dirs $opt_t 2>&1`;
+   if ($dirs =~ /no such files/) {
+      die "$opt_t doesn't seem to exist?\n";
+   } else {
+      $valid_t = 1;
+   }
+}
+if ($opt_s =~ /^\/\//) {
+   my ($dirs) = `$p4 dirs $opt_s 2>&1`;
+   if ($dirs =~ /no such files/) {
+      die "$opt_s doesn't seem to exist?\n";
+   } else {
+      $valid_s = 1;
+   }
+}
+if ($ENV{MAHI_SW_BASE}) {
+   $ENV{MAHI_SW_BASE} =~ s/\\/\//g; # unix-style slashes
+   if (-d "$ENV{MAHI_SW_BASE}/$opt_t") {
+      $opt_t = "$ENV{MAHI_SW_BASE}/$opt_t";
+      $valid_t = 1;
+   }
+   if (-d "$ENV{MAHI_SW_BASE}/$opt_s") {
+      $opt_s = "$ENV{MAHI_SW_BASE}/$opt_s";
+      $valid_s = 1;
+   }
+}
+if (-d "$opt_t") {
+   $valid_t = 1;
+}
+if (-d "$opt_s") {
+   $valid_s = 1;
+}
+
+unless ($valid_t && $valid_s) {
+   die "$opt_s or $opt_t is invalid.\n";
+}
+$opt_s =~ s/$/\/\.\.\./;
+$opt_t =~ s/$/\/\.\.\./;
+
+my (@change) = `$p4 describe -s $change`;
+my (@decription);
+
+foreach my $line (@change) {
+   last if ($line =~ /Affected files \.\.\./);
+   chomp ($line);
+   $line =~ s/^[ \t]+//;
+   push (@description, $line);
+}
+
+# create a change
+open (P4CHANGE, ">p4change.tmp") || die "cannot open p4change.tmp\n";
+print P4CHANGE "Change:\t new\n";
+print P4CHANGE "Description:\n\tIntegrated the following from $opt_s:\n";
+foreach (@description) {
+   print P4CHANGE "\t$_\n";
+}
+close (P4CHANGE);
+my ($newchange) = `$p4 change -i < p4change.tmp`;
+unlink (p4change.tmp);
+if ($newchange =~ /Change (\d+) created./) {
+   $newchange = $1;
+} else {
+   die "could not create change\n";
+}
+print "Integrating $opt_s to $opt_t for change $change\n";
+my (@integ) = `$p4 integrate -i -d -v -c $newchange $opt_s\@$change,$change $opt_t`;
+if ($#integ < 0) {
+   `$p4 change -d $newchange`;
+   die "Could not integrate using the following cmd:\n$p4 integrate -c $newchange $opt_s\@$change,$change $opt_t\nEnsure that source and target params are correct, that change $change is the correct changelist and the these changes haven't all ready been integrated.\n";
+} 
+my $rc  = 0xffff & system("$p4 submit -c $newchange");
+my $unresolved=0;
+if ($rc) {
+  print "Resolving integrations\n";
+  foreach my $file (@integ) {
+    if ($file =~ /(\/\/.*)#\d+ - /) {
+        $file = $1;
+    } else {
+        die "parsing error...\n";
+    }
+    my $cmd;
+    if ($binary) {
+       $cmd = "$p4 resolve -at $file > /tmp/resolve.out 2>&1";
+    } else {
+       $cmd = "$p4 resolve -am $file > /tmp/resolve.out 2>&1";
+    }
+    print "\t$file\n";
+    my $rc = 0xffff & system("$cmd");
+    if ($rc) {
+      `cat /tmp/resolve.out`;
+      $unresolved++;
+    } 
+    unlink("/tmp/resolve.out");
+  }
+}
+
+if ($unresolved == 0) {
+  my $rc  = 0xffff & system("$p4 submit -c $newchange");
+  if ($rc ne 0) {
+    print "submit failed. resolve problems and resubmit\n";
+    print "$p4 submit -c $newchange\n";
+  }
+} else {
+    print "Unresolved files remain: resolve problems and submit $newchange\n";
+    print "$p4 submit -c $newchange\n";
+}
+  
+
+sub usage {
+   # print usage
+   print "NAME\n$0\n";
+   print "SYNOPSIS\n$0 [-h] [-c <changelist number> -s <source branch> -t <target branch>] \n";
+   print "DESCRIPTION\nA perl script to integrate a single changelist.\n";
+   print "OPTIONS\n";
+   print "\t-c\n\t\tchangelist number.\n";
+   print "\t-p\n\t\tperforce executable (default 'p4').\n";
+   print "\t-s\n\t\tsource branch\n";
+   print "\t-t\n\t\ttarget branch\n";
+   print "\t-b\n\t\tbinary merge for ThirdParty\n";
+   print "\n";
+   exit (1);
+}
+
+

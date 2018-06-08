@@ -1,0 +1,62 @@
+<project name="ZimbraServer" default="pack">
+	
+	<property name="jetty.version" value="6.1.22.z6" />
+	<property name="slf4j.version" value="1.3.1" />
+	
+	<property name="build.dir" location="build" />
+	<property name="src.dir" location="${user.home}/svn/jetty/jetty-6.1.22-z6" />
+	<!--property name="src.dir" location="${build.dir}/src/jetty-${jetty.version}" /-->
+	<property name="jetty.dir" location="${build.dir}/jetty-${jetty.version}" />
+	<property name="slf4j.dir" location="../slf4j-${slf4j.version}" />
+	
+	
+	<target name="clean">
+	    <delete dir="${build.dir}" />
+	</target>
+	
+	<target name="shop" depends="clean">
+		<!--unzip src="src/jetty-${jetty.version}.zip" dest="${build.dir}/src"/-->
+		
+		<copy todir="${jetty.dir}" file="${src.dir}/NOTICE.txt" />
+		<copy todir="${jetty.dir}" file="${src.dir}/README.txt" />
+		<copy todir="${jetty.dir}" file="${src.dir}/VERSION.txt" />
+		<copy todir="${jetty.dir}" file="${src.dir}/start.jar" />
+		
+		<copy todir="${jetty.dir}/LICENSES">
+			<fileset dir="${src.dir}/LICENSES" includes="LICENSE*.txt" />
+		</copy>
+		
+		<copy todir="${jetty.dir}/lib" file="${src.dir}/lib/jetty-${jetty.version}.jar" />
+		<copy todir="${jetty.dir}/lib" file="${src.dir}/lib/jetty-util-${jetty.version}.jar" />
+		<copy todir="${jetty.dir}/lib" file="${src.dir}/lib/servlet-api-2.5.20110712.jar" />
+		<copy todir="${jetty.dir}/lib/ext" file="${src.dir}/lib/ext/jetty-sslengine-${jetty.version}.jar" />
+		<copy todir="${jetty.dir}/lib/ext" file="${src.dir}/lib/ext/jetty-setuid-${jetty.version}.jar" />
+		<copy todir="${jetty.dir}/lib/ext" file="${src.dir}/lib/ext/jetty-rewrite-handler-${jetty.version}.jar" />
+		<copy todir="${jetty.dir}/lib/naming" file="${src.dir}/lib/naming/jetty-naming-${jetty.version}.jar" />
+		<copy todir="${jetty.dir}/lib/plus" file="${src.dir}/lib/plus/jetty-plus-${jetty.version}.jar" />
+		<!--copy todir="${jetty.dir}/lib/plus" file="${src.dir}/lib/plus/activation-1.1.jar" />
+		<copy todir="${jetty.dir}/lib/plus" file="${src.dir}/lib/plus/mail-1.4.jar" /-->
+		<copy todir="${jetty.dir}/lib/jsp-2.1">
+               	    <fileset dir="${src.dir}/lib/jsp-2.1/">
+		        <exclude name="*slf4j*.jar"/>
+		    </fileset>
+		</copy>
+		
+		<mkdir dir="${jetty.dir}/etc"/>
+		<mkdir dir="${jetty.dir}/logs"/>
+		<mkdir dir="${jetty.dir}/work"/>
+		<mkdir dir="${jetty.dir}/webapps"/>
+
+		<copy todir="${jetty.dir}/lib" file="${slf4j.dir}/slf4j-api-${slf4j.version}.jar"/>
+		<copy todir="${jetty.dir}/lib" file="${slf4j.dir}/slf4j-log4j12-${slf4j.version}.jar"/>
+	</target>
+	
+	<target name="pack" depends="shop">
+		<tar destfile="${build.dir}/jetty-${jetty.version}.tar" basedir="build" includes="jetty-${jetty.version}/**"/>
+		<gzip zipfile="${build.dir}/jetty-${jetty.version}.tar.gz" src="${build.dir}/jetty-${jetty.version}.tar"/>		
+		<delete file="${build.dir}/jetty-${jetty.version}.tar"/>
+
+		<echo message="DONOT forget to update ZimbraCommon/jars with jetty-util-${jetty.version}.jar"/>
+	</target>
+	
+</project>

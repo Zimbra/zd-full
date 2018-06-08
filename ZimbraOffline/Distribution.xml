@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+    <title>Zimbra Desktop</title>
+    <installation-check script="installation_check()" />
+    <license file="License.rtf"/>
+    <background file="background.png" mime-type="image/png" alignment="right" scaling="none" />
+    <pkg-ref id="com.zimbra.zimbraDesktop.app.pkg"/>
+    <options allow-external-scripts="yes" customize="never" require-scripts="false"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="com.zimbra.zimbraDesktop.app.pkg"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="com.zimbra.zimbraDesktop.app.pkg" visible="false">
+        <pkg-ref id="com.zimbra.zimbraDesktop.app.pkg"/>
+    </choice>
+    <pkg-ref id="com.zimbra.zimbraDesktop.app.pkg" version="0" onConclusion="none">Zimbra_Desktop_Temp.mpkg</pkg-ref>
+
+    <script><![CDATA[
+
+function installation_check () {
+    exit_code_1 = system.run('/bin/bash', '-c', 'test -x "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java"; exit $?');
+    if ( exit_code_1 != 0 ) {
+        exit_code_2 = system.run('/bin/bash', '-c', 'java -version >/dev/null 2>&1; exit $?');
+        if ( exit_code_2 != 0 ) {
+            my.result.title='Java Not Found';
+            my.result.message='Java SE Runtime Environment (JRE) not found. Please install JRE 1.6 or later.';
+            my.result.type = 'Fatal';
+            return false
+        }
+    }
+    return true
+}
+
+    ]]></script>
+
+</installer-gui-script>

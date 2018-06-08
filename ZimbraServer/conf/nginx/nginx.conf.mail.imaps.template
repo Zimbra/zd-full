@@ -1,0 +1,17 @@
+!{explode vhn_vip_ssl}
+# IMAPS proxy configuration
+# 
+server
+{
+    server_name         ${vhn}; 
+    ${core.ipboth.enabled}listen              ${vip}:${mail.imaps.port};
+    ${core.ipv4only.enabled}listen            ${vip}:${mail.imaps.port};
+    ${core.ipv6only.enabled}listen            ${vip}:${mail.imaps.port} ipv6only=on;
+    protocol            imap;
+    proxy               on;
+    ssl                 on;
+    ssl_certificate     ${ssl.crt};
+    ssl_certificate_key ${ssl.key};
+    sasl_service_name   "imap";
+}
+

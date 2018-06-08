@@ -1,0 +1,69 @@
+#!/bin/bash
+# 
+# 
+# 
+source /opt/zimbra/bin/zmshutil || exit 1
+zmsetvars
+
+
+echo "----------------"
+date +%Y%m%d%H%M%S
+echo "----------------"
+id
+echo "----------------"
+uname -a
+echo "----------------"
+hostname
+echo "----------------"
+H=`/opt/zimbra/bin/zmhostname`
+echo $H
+echo "----------------"
+host $H 
+echo "----------------"
+P=`/opt/zimbra/libexec/get_plat_tag.sh`
+echo $P
+echo "----------------"
+df -h
+echo "----------------"
+/sbin/ifconfig
+echo "----------------"
+
+if [[ x$P == "xMACOSX"* ]]; then
+	ls -ld /Library/Receipts/zimbra-*
+elif [[ "x$P" == "xUBUNTU"* || "x$P" == "DEBIAN"* ]]; then
+	apt-cache show zimbra-core
+else
+	rpm -qi zimbra-core
+fi
+echo "----------------"
+ls -l /opt/zimbra
+echo "----------------"
+uptime
+echo "----------------"
+memkb=$(zmsysmemkb)
+echo $memkb KB
+echo "----------------"
+if [ x$P != "xMACOSX" -a x$P != "xMACOSXx86" ]; then
+	echo "----------------"
+	freemem=`free -m`
+	echo FREE $freemem KB
+	echo "----------------"
+fi
+echo "----------------"
+cat /etc/hosts
+echo "----------------"
+cat /etc/resolv.conf
+echo "----------------"
+cat /etc/nsswitch.conf
+echo "----------------"
+if [ -x "/usr/sbin/selinux" ]; then
+  /usr/sbin/selinux
+fi
+echo "----------------"
+ls -ld /usr/lib/libstdc++*
+if [ -d "/usr/lib64" ]; then
+  ls -ld /usr/lib64/libstdc++*
+fi
+echo "----------------"
+  
+
