@@ -6,7 +6,7 @@
  * 
  * Auto-update response
  * <updates>
- * <update type="minor" version="7.2.7 build 12059" extensionVersion="2.0.1" detailsURL="http://www.zimbra.com/support/documentation/zd-documentation.html"  licenseURL="http://www.zimbra.com/license/zimbra-public-eula-2-3.html">
+ * <update type="minor" version="7.2.7 build 12059" extensionVersion="2.0.1" detailsURL="http://www.zimbra.com/support/documentation/zd-documentation.html"  licenseURL="https://www.gnu.org/licenses/gpl-3.0.en.html">
  * <patch type="complete" URL="http://files.zimbra.com/downloads/zdesktop/7.2.7/b12059/zdesktop_7_2_7_ga_b12059_20150629062100_macos_intel.dmg" hashFunction="md5" hashValue="380f369eaa984981486bb589b1f25508" size="77805788"/>
  * </update>
  * </updates>
