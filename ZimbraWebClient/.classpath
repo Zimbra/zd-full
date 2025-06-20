@@ -4,7 +4,7 @@
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/jstl.jar"/>
 	<classpathentry kind="lib" path="WebRoot/WEB-INF/lib/standard.jar"/>
 	<classpathentry kind="lib" path="jars/commons-cli-1.2.jar"/>
-	<classpathentry kind="lib" path="jars/jsp-2.1/ant-1.6.5.jar"/>
+	<classpathentry kind="lib" path="jars/jsp-2.1/ant-1.10.15.jar"/>
 	<classpathentry kind="lib" path="jars/jsp-2.1/jsp-2.1.jar"/>
 	<classpathentry kind="lib" path="jars/jsp-2.1/jsp-api-2.1.jar"/>
 	<classpathentry kind="lib" path="/ZimbraCommon/jars/gifencoder.jar"/>
