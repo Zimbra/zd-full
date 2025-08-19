@@ -10,8 +10,8 @@ var gRestEndpoint = "http://api.flickr.com/services/rest/";
 var gAuthzEndpoint = "http://flickr.com/services/auth/";
 
 // (hard coded) Flick API key and Secret
-var YFLICKR_APIKEY = "2f8c5324f526d933cd25b8cfd1ec4192";
-var YFLICKR_APISECRET = "d199b8f1251101ce";
+var YFLICKR_APIKEY = "<Replace this with actual API Token before build>";
+var YFLICKR_APISECRET = "<Replace this with actual API Secret before build>";
 
 // Stages of Flickr authentication
 var FLICKR_AUTHSTAGE_NONE = 1;
